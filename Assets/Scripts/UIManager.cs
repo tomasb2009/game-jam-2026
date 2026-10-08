@@ -31,14 +31,20 @@ public class UIManager : MonoBehaviour
     {
         // Restaura monedas e inventario guardados al cambiar de escena
         totalMoendas = DatosJugador.monedas;
-        textoMonedas.text = totalMoendas.ToString();
 
-        foreach (string nombre in DatosJugador.inventario)
+        // La escena de menu tiene un UIManager sin campos asignados: sin estos
+        // controles, Start() lanzaba NullReferenceException al abrir el juego.
+        if (textoMonedas != null) textoMonedas.text = totalMoendas.ToString();
+
+        if (panelEquipo != null)
         {
-            GameObject prefab = Resources.Load<GameObject>(nombre);
-            if (prefab != null)
+            foreach (string nombre in DatosJugador.inventario)
             {
-                Instantiate(prefab, Vector3.zero, Quaternion.identity, panelEquipo.transform);
+                GameObject prefab = Resources.Load<GameObject>(nombre);
+                if (prefab != null)
+                {
+                    Instantiate(prefab, Vector3.zero, Quaternion.identity, panelEquipo.transform);
+                }
             }
         }
         TotalObjetos = DatosJugador.inventario.Count;
@@ -48,7 +54,7 @@ public class UIManager : MonoBehaviour
     {
         totalMoendas += moneda;
         DatosJugador.monedas = totalMoendas;
-        textoMonedas.text = totalMoendas.ToString();
+        if (textoMonedas != null) textoMonedas.text = totalMoendas.ToString();
     }
 
     // Mismos nombres y parámetro que antes: los otros scripts siguen funcionando
@@ -65,6 +71,7 @@ public class UIManager : MonoBehaviour
     private void MostrarSprite(int indice)
     {
         if (spritesBarraVida == null || spritesBarraVida.Count == 0) return;
+        if (imagenBarraVida == null) return;
 
         indice = Mathf.Clamp(indice, 0, spritesBarraVida.Count - 1);
         imagenBarraVida.sprite = spritesBarraVida[indice];
@@ -72,12 +79,12 @@ public class UIManager : MonoBehaviour
 
     public void ActivaDesactivaCajaTextos(bool activado)
     {
-        cajaTexto.SetActive(activado);
+        if (cajaTexto != null) cajaTexto.SetActive(activado);
     }
 
     public void MostrarTextos(string texto)
     {
-        textoDialogo.text = texto.ToString();
+        if (textoDialogo != null) textoDialogo.text = texto.ToString();
     }
 
     #region TIENDA
@@ -104,20 +111,25 @@ public class UIManager : MonoBehaviour
 
         if (precioObjeto <= totalMoendas && TotalObjetos < 3)
         {
+            GameObject equipo = Resources.Load<GameObject>(objeto);
+            if (equipo == null) return; // el prefab del objeto no existe: no se cobra nada
+
             TotalObjetos++;
             totalMoendas -= precioObjeto;
             DatosJugador.monedas = totalMoendas;
             DatosJugador.inventario.Add(objeto);
-            textoMonedas.text = totalMoendas.ToString();
+            if (textoMonedas != null) textoMonedas.text = totalMoendas.ToString();
 
-            GameObject equipo = Resources.Load<GameObject>(objeto);
-            Instantiate(equipo, Vector3.zero, Quaternion.identity, panelEquipo.transform);
+            if (panelEquipo != null)
+            {
+                Instantiate(equipo, Vector3.zero, Quaternion.identity, panelEquipo.transform);
+            }
         }
     }
 
     public void CerrarTienda()
     {
-        tienda.SetActive(false);
+        if (tienda != null) tienda.SetActive(false);
         Time.timeScale = 1f;
     }
 

@@ -61,7 +61,7 @@ public class Personaje : MonoBehaviour
     {
         // Recupera la vida guardada al venir de otra escena y actualiza la barra
         vidaPersonaje = DatosJugador.vida;
-        uiManager.SumaCorazones(vidaPersonaje);
+        if (uiManager != null) uiManager.SumaCorazones(vidaPersonaje);
     }
 
     private void Update()
@@ -75,7 +75,7 @@ public class Personaje : MonoBehaviour
             if (Input.GetMouseButtonDown(0))
             {
                 anim.SetTrigger("Ataca");
-                AudioManager.Instance.ReproducirSonido(sonidoAtaque);
+                if (AudioManager.Instance != null) AudioManager.Instance.ReproducirSonido(sonidoAtaque);
             }
         }
         else // TipoArma.Arco
@@ -93,10 +93,13 @@ public class Personaje : MonoBehaviour
             }
         }
 
+#if UNITY_EDITOR
+        // Atajo de desarrollo para probar la muerte sin recibir golpes.
         if (Input.GetKeyDown(KeyCode.K))
         {
             CausarHerida();
         }
+#endif
     }
 
     private void FixedUpdate()
@@ -303,7 +306,7 @@ public class Personaje : MonoBehaviour
             vidaPersonaje--;
             DatosJugador.vida = vidaPersonaje;
 
-            uiManager.RestaCorazones(vidaPersonaje);
+            if (uiManager != null) uiManager.RestaCorazones(vidaPersonaje);
 
             if (vidaPersonaje == 0)
             {
@@ -315,7 +318,7 @@ public class Personaje : MonoBehaviour
 
                 anim.SetTrigger("Muere");
 
-                AudioManager.Instance.ReproducirSonido(sonidoMuerte);
+                if (AudioManager.Instance != null) AudioManager.Instance.ReproducirSonido(sonidoMuerte);
 
                 Invoke(nameof(Morir), 1f);
             }
@@ -335,13 +338,22 @@ public class Personaje : MonoBehaviour
         {
             vidaPersonaje++;
             DatosJugador.vida = vidaPersonaje;
-            uiManager.SumaCorazones(vidaPersonaje);
+            if (uiManager != null) uiManager.SumaCorazones(vidaPersonaje);
         }
     }
 
     private void Morir()
     {
+        // OJO: antes esto solo hacia Destroy(gameObject) y la partida quedaba sin
+        // jugador (no habia derrota, ni reinicio, ni respawn). Ahora se recarga el
+        // nivel en curso con el fundido de TransicionEscena, para que morir siempre
+        // tenga continuidad. La pantalla de derrota definitiva queda pendiente.
         DatosJugador.Reiniciar();
+
+        string escenaActual = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+
         Destroy(this.gameObject);
+
+        TransicionEscena.CargarEscena(escenaActual);
     }
 }

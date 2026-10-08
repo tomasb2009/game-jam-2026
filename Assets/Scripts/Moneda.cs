@@ -11,19 +11,17 @@ public class Moneda : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag("Player"))
-        {
-            if (sumaMoneda != null)
-            {
-                SumarMoneda();
-                Destroy(this.gameObject);
-                AudioManager.Instance.ReproducirSonido(sonidoMoneda);
-            }
-        }
+        if (!collision.gameObject.CompareTag("Player")) return;
+
+        SumarMoneda();
+        Destroy(this.gameObject);
+
+        if (AudioManager.Instance != null) AudioManager.Instance.ReproducirSonido(sonidoMoneda);
     }
 
     private void SumarMoneda()
     {
-        sumaMoneda(cantidadMonedas);
+        if (sumaMoneda != null) sumaMoneda(cantidadMonedas);
+        else DatosJugador.monedas += cantidadMonedas; // sin HUD en escena la moneda igual cuenta
     }
 }

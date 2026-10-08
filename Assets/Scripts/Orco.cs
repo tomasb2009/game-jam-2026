@@ -41,6 +41,50 @@ public class Orco : MonoBehaviour
         sprite = GetComponentInChildren<SpriteRenderer>();
         ataqueOrco = GetComponentInChildren<AtaqueOrco>();
         mpb = new MaterialPropertyBlock();
+
+        // Los orcos que crea la Bruja en tiempo de ejecucion usan los valores del
+        // prefab, donde 'personaje' y 'puntosRuta' estan vacios. Sin esto, Update()
+        // tira NullReferenceException todos los frames.
+        if (puntosRuta == null) puntosRuta = new Transform[0];
+        BuscarJugador();
+    }
+
+    private void BuscarJugador()
+    {
+        if (personaje != null) return;
+
+        GameObject jugador = GameObject.FindGameObjectWithTag("Player");
+        if (jugador != null) personaje = jugador.transform;
+    }
+
+    private bool TieneRuta()
+    {
+        if (puntosRuta == null || puntosRuta.Length == 0) return false;
+
+        for (int i = 0; i < puntosRuta.Length; i++)
+        {
+            if (puntosRuta[i] != null) return true;
+        }
+
+        return false;
+    }
+
+    private Vector3 PosicionRutaActual()
+    {
+        if (puntosRuta == null || puntosRuta.Length == 0) return transform.position;
+
+        if (indiceRuta < 0 || indiceRuta >= puntosRuta.Length) indiceRuta = 0;
+
+        if (puntosRuta[indiceRuta] == null)
+        {
+            // Busca el primer punto valido (los puntos borrados dejan huecos null)
+            for (int i = 0; i < puntosRuta.Length; i++)
+            {
+                if (puntosRuta[i] != null) { indiceRuta = i; break; }
+            }
+        }
+
+        return puntosRuta[indiceRuta] != null ? puntosRuta[indiceRuta].position : transform.position;
     }
 
     private void Start()
@@ -55,12 +99,22 @@ public class Orco : MonoBehaviour
 
         transform.position = new Vector3(transform.position.x, transform.position.y, 0);
 
+        if (personaje == null) BuscarJugador();
+        if (personaje == null) return; // todavia no existe el jugador en la escena
+
         float distancia = Vector3.Distance(personaje.position, transform.position);
 
-        if (transform.position == puntosRuta[indiceRuta].position)
+        if (TieneRuta())
         {
-            if (indiceRuta < puntosRuta.Length - 1) indiceRuta++;
-            else indiceRuta = 0;
+            // Antes era 'transform.position == punto.position' (igualdad exacta de float,
+            // casi nunca verdadera). Ahora usamos un radio de llegada.
+            Vector3 posicionRuta = PosicionRutaActual();
+
+            if ((transform.position - posicionRuta).sqrMagnitude < 0.04f)
+            {
+                if (indiceRuta < puntosRuta.Length - 1) indiceRuta++;
+                else indiceRuta = 0;
+            }
         }
 
         if(distancia > 3)objetivoDetectado = true;
@@ -90,13 +144,20 @@ public class Orco : MonoBehaviour
     {
         if (esDetectado)
         {
+            agente.isStopped = false;   // por si quedo detenido tras un retroceso
             agente.SetDestination(personaje.position);
             objetivo = personaje;
         }
+        else if (TieneRuta())
+        {
+            agente.isStopped = false;
+            agente.SetDestination(PosicionRutaActual());
+            objetivo = puntosRuta[indiceRuta];
+        }
         else
         {
-            agente.SetDestination(puntosRuta[indiceRuta].position);
-            objetivo = puntosRuta[indiceRuta];
+            agente.isStopped = true;   // sin ruta asignada, se queda quieto
+            objetivo = personaje;
         }
     }
 
@@ -124,8 +185,13 @@ public class Orco : MonoBehaviour
 
         objetivoDetectado = true;
 
-        Vector2 direccionRetroceso = (transform.position - origenAtaque.position).normalized;
-        if (direccionRetroceso == Vector2.zero) direccionRetroceso = Vector2.right;
+        Vector2 direccionRetroceso = Vector2.right;
+
+        if (origenAtaque != null)
+        {
+            Vector2 calculada = ((Vector2)transform.position - (Vector2)origenAtaque.position).normalized;
+            if (calculada != Vector2.zero) direccionRetroceso = calculada;
+        }
 
         StartCoroutine(Flash());
 
@@ -135,7 +201,7 @@ public class Orco : MonoBehaviour
         }
         else
         {
-            if (sonidoGolpeOrco != null) AudioManager.Instance.ReproducirSonido(sonidoGolpeOrco);
+            if (sonidoGolpeOrco != null && AudioManager.Instance != null) AudioManager.Instance.ReproducirSonido(sonidoGolpeOrco);
 
             StartCoroutine(Retroceso(direccionRetroceso, tiempoInvulnerable));
         }
@@ -155,7 +221,7 @@ public class Orco : MonoBehaviour
 
         anim.SetTrigger("Muere");
 
-        if (sonidoMuerteOrco != null) AudioManager.Instance.ReproducirSonido(sonidoMuerteOrco);
+        if (sonidoMuerteOrco != null && AudioManager.Instance != null) AudioManager.Instance.ReproducirSonido(sonidoMuerteOrco);
 
         StartCoroutine(RetrocesoSinReactivar(direccionRetroceso));
 
@@ -176,7 +242,9 @@ public class Orco : MonoBehaviour
         }
 
         enRetroceso = false;
-        agente.isStopped = false;
+
+        // Solo vuelve a caminar si tiene a donde ir (ruta o jugador detectado)
+        agente.isStopped = !(objetivoDetectado || TieneRuta());
 
         float restante = tiempoInvulnerabilidad - duracionRetroceso;
         if (restante > 0) yield return new WaitForSeconds(restante);
