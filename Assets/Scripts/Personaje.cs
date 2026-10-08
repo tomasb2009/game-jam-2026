@@ -22,6 +22,10 @@ public class Personaje : MonoBehaviour
 
     [SerializeField] private SelectorArmaUI selectorArmaUI;
 
+    [Header("Sonidos del arco (Assets/Resources/Audio)")]
+    [SerializeField] private string recursoSonidoCarga = "Audio/sfx_arco_carga";
+    [SerializeField] private string recursoSonidoDisparo = "Audio/sfx_arco_disparo";
+
     [Header("Poción de velocidad")]
     [SerializeField] private float multiplicadorVelocidad = 1.5f;
     [SerializeField] private float duracionVelocidad = 15f;
@@ -37,6 +41,8 @@ public class Personaje : MonoBehaviour
 
     private float velocidadBase;
     private Coroutine corrutinaVelocidad;
+    private AudioClip sonidoArcoCarga;
+    private AudioClip sonidoArcoDisparo;
 
     private bool estoyHablando;
     private bool estaMuerto;
@@ -53,6 +59,9 @@ public class Personaje : MonoBehaviour
         impulso = GetComponent<CinemachineImpulseSource>();
 
         velocidadBase = velocidad;
+
+        sonidoArcoCarga = Resources.Load<AudioClip>(recursoSonidoCarga);
+        sonidoArcoDisparo = Resources.Load<AudioClip>(recursoSonidoDisparo);
 
         ActualizarVisualArma();
     }
@@ -231,13 +240,16 @@ public class Personaje : MonoBehaviour
     {
         arcoCargado = true;
         if (arcoRenderer != null) arcoRenderer.sprite = spriteArcoTensado;
-        // TODO: sonido de carga
+
+        if (AudioManager.Instance != null) AudioManager.Instance.ReproducirSonido(sonidoArcoCarga);
     }
 
     private void Disparar()
     {
         arcoCargado = false;
         StartCoroutine(RutinaSoltarArco());
+
+        if (AudioManager.Instance != null) AudioManager.Instance.ReproducirSonido(sonidoArcoDisparo);
 
         if (flechaPrefab == null || puntoFlecha == null) return;
 
@@ -344,16 +356,10 @@ public class Personaje : MonoBehaviour
 
     private void Morir()
     {
-        // OJO: antes esto solo hacia Destroy(gameObject) y la partida quedaba sin
-        // jugador (no habia derrota, ni reinicio, ni respawn). Ahora se recarga el
-        // nivel en curso con el fundido de TransicionEscena, para que morir siempre
-        // tenga continuidad. La pantalla de derrota definitiva queda pendiente.
-        DatosJugador.Reiniciar();
-
-        string escenaActual = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-
+        // La derrota tiene pantalla propia: FinDeJuego ofrece reintentar el nivel
+        // (conservando monedas e inventario) o volver al menu principal.
         Destroy(this.gameObject);
 
-        TransicionEscena.CargarEscena(escenaActual);
+        FinDeJuego.Instancia.MostrarDerrota();
     }
 }

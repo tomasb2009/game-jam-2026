@@ -8,6 +8,21 @@ public class Orco : MonoBehaviour
     public Transform[] puntosRuta;
     public float rangoAtaque = 1.2f;
 
+    // --- API publica: la usan el jefe final y la barra de vida de la UI ---
+    public event System.Action<Orco> AlRecibirDano;
+    public event System.Action<Orco> AlMorir;
+
+    public int VidaActual { get { return vidaOrco; } }
+    public int VidaInicial { get; private set; }
+    public bool EstaMuerto { get { return estaMuerto; } }
+
+    public float VelocidadAgente { get { return agente != null ? agente.speed : 0f; } }
+
+    public void PonerVelocidad(float velocidad) { if (agente != null) agente.speed = velocidad; }
+    public void PonerDetenido(bool detenido) { if (agente != null) agente.isStopped = detenido; }
+    public void PonerRangoAtaque(float rango) { rangoAtaque = rango; }
+    public void PonerCooldownAtaque(float segundos) { cooldownAtaque = Mathf.Max(0.2f, segundos); }
+
     [Header("Vida y feedback de daño")]
     [SerializeField] private int vidaOrco = 2;
     [SerializeField] private float fuerzaRetroceso = 4f;
@@ -17,6 +32,7 @@ public class Orco : MonoBehaviour
     [SerializeField] private AudioClip sonidoGolpeOrco;
     [SerializeField] private AudioClip sonidoMuerteOrco;
     [SerializeField] private float tiempoHastaDestruir = 1.2f;
+    [SerializeField] private float cooldownAtaque = 2f;
 
     private int indiceRuta;
     private NavMeshAgent agente;
@@ -46,6 +62,8 @@ public class Orco : MonoBehaviour
         // prefab, donde 'personaje' y 'puntosRuta' estan vacios. Sin esto, Update()
         // tira NullReferenceException todos los frames.
         if (puntosRuta == null) puntosRuta = new Transform[0];
+
+        VidaInicial = vidaOrco;
         BuscarJugador();
     }
 
@@ -89,6 +107,8 @@ public class Orco : MonoBehaviour
 
     private void Start()
     {
+        if (agente == null) return;
+
         agente.updateRotation = false;
         agente.updateUpAxis = false;
     }
@@ -140,8 +160,33 @@ public class Orco : MonoBehaviour
         StartCoroutine(CooldownAtaque());
     }
 
+    // Si la escena no tiene un NavMesh horneado el agente no puede moverse.
+    // En ese caso se persigue al jugador moviendo el transform a mano, para que
+    // el enemigo no quede plantado (y para que la escena nueva del jefe funcione
+    // aunque no se hornee el NavMesh).
+    private bool AgentePuedeMoverse()
+    {
+        return agente != null && agente.enabled && agente.isOnNavMesh;
+    }
+
     void MovimientoOrco(bool esDetectado)
     {
+        if (!AgentePuedeMoverse())
+        {
+            if (esDetectado && personaje != null)
+            {
+                Vector2 direccion = ((Vector2)personaje.position - (Vector2)transform.position).normalized;
+
+                float velocidad = agente != null ? agente.speed : 3f;
+                if (velocidad <= 0.01f) velocidad = 3f;
+
+                transform.position += (Vector3)(direccion * velocidad * Time.deltaTime);
+                objetivo = personaje;
+            }
+
+            return;
+        }
+
         if (esDetectado)
         {
             agente.isStopped = false;   // por si quedo detenido tras un retroceso
@@ -173,7 +218,7 @@ public class Orco : MonoBehaviour
 
     IEnumerator CooldownAtaque()
     {
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(cooldownAtaque);
         puedeAtacar = true;
     }
     public void RecibirDaño(Transform origenAtaque)
@@ -182,6 +227,8 @@ public class Orco : MonoBehaviour
 
         vidaOrco--;
         recibiendoDaño = true;
+
+        if (AlRecibirDano != null) AlRecibirDano(this);
 
         objetivoDetectado = true;
 
@@ -210,6 +257,8 @@ public class Orco : MonoBehaviour
     private void Morir(Vector2 direccionRetroceso)
     {
         estaMuerto = true;
+
+        if (AlMorir != null) AlMorir(this);
 
         agente.isStopped = true;
         agente.enabled = false;
