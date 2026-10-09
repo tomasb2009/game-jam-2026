@@ -20,6 +20,12 @@ public class Bruja : MonoBehaviour
     [SerializeField] private float radioPared = 0.45f;
     [SerializeField] private float tiempoEntreVagares = 2.5f;
 
+    [Header("Vida")]
+    [SerializeField] private int vida = 3;
+    [SerializeField] private float duracionFlash = 0.12f;
+    [SerializeField] private float fuerzaRetroceso = 2.5f;
+    [SerializeField] private float duracionRetroceso = 0.18f;
+
     [Header("Ataque propio")]
     [SerializeField] private GameObject proyectilPrefab;
     [SerializeField] private float alcanceAtaque = 7f;
@@ -33,11 +39,16 @@ public class Bruja : MonoBehaviour
     private float proximoVagar;
     private float proximoAtaque;
     private bool moviendo;
+    private bool estaMuerta;
+    private bool recibiendoGolpe;
+    private MaterialPropertyBlock mpb;
+    private static readonly int FlashAmountID = Shader.PropertyToID("_FlashAmount");
 
     private void Awake()
     {
         sprite = GetComponentInChildren<SpriteRenderer>();
         direccionVagar = Random.insideUnitCircle.normalized;
+        mpb = new MaterialPropertyBlock();
     }
 
     private void Start()
@@ -56,6 +67,8 @@ public class Bruja : MonoBehaviour
 
     private void Update()
     {
+        if (estaMuerta) return;
+
         if (jugador == null) BuscarJugador();
         if (jugador == null) return;
 
@@ -65,6 +78,8 @@ public class Bruja : MonoBehaviour
 
         Mover(haciaJugador, distancia);
         Girar(haciaJugador.x);
+
+        if (recibiendoGolpe) return;
 
         if (distancia <= alcanceAtaque && Time.time >= proximoAtaque)
         {
@@ -137,6 +152,69 @@ public class Bruja : MonoBehaviour
         // La animacion mira a la derecha: si va hacia la izquierda se espeja
         if (direccionX > 0.01f) sprite.flipX = false;
         else if (direccionX < -0.01f) sprite.flipX = true;
+    }
+
+    // ------------------------- vida -------------------------
+
+    // La llaman Espada.cs y Flecha.cs cuando el jugador la golpea.
+    // (Antes la bruja no se podia eliminar: no tenia tag ni recibia golpes.)
+    public void RecibirGolpe(Transform origenAtaque)
+    {
+        if (estaMuerta || recibiendoGolpe) return;
+
+        vida--;
+
+        if (vida <= 0)
+        {
+            Morir();
+            return;
+        }
+
+        Vector2 direccion = Vector2.right;
+        if (origenAtaque != null)
+        {
+            Vector2 calculada = ((Vector2)transform.position - (Vector2)origenAtaque.position).normalized;
+            if (calculada != Vector2.zero) direccion = calculada;
+        }
+
+        StartCoroutine(Golpe(direccion));
+    }
+
+    private IEnumerator Golpe(Vector2 direccion)
+    {
+        recibiendoGolpe = true;
+
+        if (sprite != null)
+        {
+            sprite.GetPropertyBlock(mpb);
+            mpb.SetFloat(FlashAmountID, 1f);
+            sprite.SetPropertyBlock(mpb);
+        }
+
+        float t = 0f;
+        while (t < duracionRetroceso)
+        {
+            transform.position += (Vector3)direccion * fuerzaRetroceso * Time.deltaTime;
+            t += Time.deltaTime;
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(duracionFlash);
+
+        if (sprite != null)
+        {
+            sprite.GetPropertyBlock(mpb);
+            mpb.SetFloat(FlashAmountID, 0f);
+            sprite.SetPropertyBlock(mpb);
+        }
+
+        recibiendoGolpe = false;
+    }
+
+    private void Morir()
+    {
+        estaMuerta = true;
+        Destroy(gameObject, 0.6f);
     }
 
     // ------------------------- ataque -------------------------

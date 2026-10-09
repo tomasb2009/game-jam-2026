@@ -9,6 +9,14 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 1390480073275068210, guid: 6ff9e402842038947ab7243cb6871885, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1390480073275068210, guid: 6ff9e402842038947ab7243cb6871885, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1390480073275068210, guid: 6ff9e402842038947ab7243cb6871885, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.9285
       objectReference: {fileID: 0}
@@ -48,9 +56,33 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3097460190320143509, guid: 6ff9e402842038947ab7243cb6871885, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 2318975691530101096, guid: 3a73a2ff3e196ad4eac788cca3cf1bf2, type: 3}
+    - target: {fileID: 3097460190320143509, guid: 6ff9e402842038947ab7243cb6871885, type: 3}
+      propertyPath: m_SortingOrder
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 3552538692360332232, guid: 6ff9e402842038947ab7243cb6871885, type: 3}
       propertyPath: m_Name
       value: ProyectilBruja
+      objectReference: {fileID: 0}
+    - target: {fileID: 3772649446497656884, guid: 6ff9e402842038947ab7243cb6871885, type: 3}
+      propertyPath: m_Size.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3772649446497656884, guid: 6ff9e402842038947ab7243cb6871885, type: 3}
+      propertyPath: m_Size.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3772649446497656884, guid: 6ff9e402842038947ab7243cb6871885, type: 3}
+      propertyPath: m_SpriteTilingProperty.oldSize.x
+      value: 0.24
+      objectReference: {fileID: 0}
+    - target: {fileID: 3772649446497656884, guid: 6ff9e402842038947ab7243cb6871885, type: 3}
+      propertyPath: m_SpriteTilingProperty.oldSize.y
+      value: 0.24
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 7190008970209210321, guid: 6ff9e402842038947ab7243cb6871885, type: 3}

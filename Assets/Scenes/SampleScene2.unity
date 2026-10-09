@@ -311,6 +311,10 @@ MonoBehaviour:
   distanciaMaxima: 8
   radioPared: 0.45
   tiempoEntreVagares: 2.5
+  vida: 3
+  duracionFlash: 0.12
+  fuerzaRetroceso: 2.5
+  duracionRetroceso: 0.18
   proyectilPrefab: {fileID: 6460393654562402476, guid: 6baf6a8ce92e86e439bb2833d5e0aeb5, type: 3}
   alcanceAtaque: 7
   intervaloAtaque: 2.6
@@ -3725,6 +3729,10 @@ MonoBehaviour:
   distanciaMaxima: 8
   radioPared: 0.45
   tiempoEntreVagares: 2.5
+  vida: 3
+  duracionFlash: 0.12
+  fuerzaRetroceso: 2.5
+  duracionRetroceso: 0.18
   proyectilPrefab: {fileID: 6460393654562402476, guid: 6baf6a8ce92e86e439bb2833d5e0aeb5, type: 3}
   alcanceAtaque: 7
   intervaloAtaque: 2.6
@@ -3922,6 +3930,10 @@ MonoBehaviour:
   distanciaMaxima: 8
   radioPared: 0.45
   tiempoEntreVagares: 2.5
+  vida: 3
+  duracionFlash: 0.12
+  fuerzaRetroceso: 2.5
+  duracionRetroceso: 0.18
   proyectilPrefab: {fileID: 6460393654562402476, guid: 6baf6a8ce92e86e439bb2833d5e0aeb5, type: 3}
   alcanceAtaque: 7
   intervaloAtaque: 2.6
@@ -96744,7 +96756,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1792679547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -107301,6 +107313,10 @@ MonoBehaviour:
   distanciaMaxima: 8
   radioPared: 0.45
   tiempoEntreVagares: 2.5
+  vida: 3
+  duracionFlash: 0.12
+  fuerzaRetroceso: 2.5
+  duracionRetroceso: 0.18
   proyectilPrefab: {fileID: 6460393654562402476, guid: 6baf6a8ce92e86e439bb2833d5e0aeb5, type: 3}
   alcanceAtaque: 7
   intervaloAtaque: 2.6

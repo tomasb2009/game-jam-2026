@@ -31,8 +31,10 @@ public class UIManager : MonoBehaviour
     private void Start()
     {
         // Restaura monedas e inventario guardados al cambiar de escena
-        // Ninguna escena debe arrancar con el tiempo congelado por la anterior
+        // Ninguna escena debe arrancar con el tiempo congelado por la anterior,
+        // ni con la tienda abierta (regla del diseno)
         Time.timeScale = 1f;
+        if (tienda != null) tienda.SetActive(false);
 
         totalMoendas = DatosJugador.monedas;
 

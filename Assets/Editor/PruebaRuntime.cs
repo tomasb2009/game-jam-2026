@@ -25,7 +25,7 @@ public static class PruebaRuntime
     {
         ("MenuPrincipal", 3f, "menu principal: musica, boton Continuar, UIManager"),
         ("SampleScene",   14f, "pueblo: jugador, monedas, bruja invocando orcos (el bug B1)"),
-        ("SampleScene2",  10f, "cavernas: brujas, murcielagos, portal al jefe"),
+        ("SampleScene2",  12f, "cavernas: brujas, murcielagos, portal al jefe"),
         ("JefeFinal",     14f, "jefe: fases, embestidas, invocacion de esbirros, barra de vida"),
     };
 
@@ -33,6 +33,11 @@ public static class PruebaRuntime
     private static double inicioPaso;
     private static bool capturando;
     private static bool conteoHecho;
+    private static bool golpesDados;
+    private static int golpesLanzados;
+    private static float proximoGolpe;
+    private static Transform brujaGolpeada;
+    private static string resultadoGolpes = "no probado";
     private static bool posicionesTomadas;
     private static int vidaAntesDelAtaque = -1;
     private static int proyectilesVistos;
@@ -40,6 +45,8 @@ public static class PruebaRuntime
     private static float distanciaBrujaJugador;
     private static Transform[] brujasPrevias;
     private static Vector2[] posicionesBrujas;
+    private static bool vidaArenaRegistrada;
+    private static float muerteEnArena = -1f;
     private static bool funcionalEmpezado;
     private static bool funcionalHecho;
     private static bool muerteProvocada;
@@ -199,6 +206,29 @@ public static class PruebaRuntime
                 return;
             }
 
+            // Un golpe cada 0,4 s (la bruja tiene un momento de invulnerabilidad)
+            if (golpesDados && golpesLanzados < 4 && ahora >= proximoGolpe)
+            {
+                proximoGolpe = (float)ahora + 0.4f;
+                golpesLanzados++;
+
+                Personaje quien = UnityEngine.Object.FindAnyObjectByType<Personaje>();
+                Bruja cercana = BrujaMasCercana(quien);
+
+                if (cercana != null && quien != null)
+                {
+                    cercana.RecibirGolpe(quien.transform);
+                    Debug.Log("[Prueba] golpe " + golpesLanzados + " a la bruja");
+                }
+            }
+
+            if (golpesDados && resultadoGolpes == "no probado" && ahora - inicioPaso >= 11.5)
+            {
+                resultadoGolpes = ReferenceEquals(brujaGolpeada, null) || brujaGolpeada == null
+                    ? "SI: la bruja desaparecio al morir" : "NO: la bruja sigue viva";
+                Debug.Log("[Prueba] resultado de golpear a la bruja: " + resultadoGolpes);
+            }
+
             if (!conteoHecho && ahora - inicioPaso >= 9.5)
             {
                 conteoHecho = true;
@@ -214,6 +244,24 @@ public static class PruebaRuntime
 
                 Debug.Log("[Prueba] bruja que mas se movio en 7 s: " + maximoRecorrido.ToString("0.00")
                     + " unidades | vida que perdio el jugador junto a la bruja: " + dañoRecibido);
+                // Ahora pruebo que la bruja SI reciba dano y se pueda eliminar.
+                // Los golpes van separados en el tiempo: la bruja tiene un momento
+                // de invulnerabilidad corto despues de cada golpe (como los orcos).
+                Personaje jugadorGolpeador = UnityEngine.Object.FindAnyObjectByType<Personaje>();
+                Bruja objetivo = BrujaMasCercana(jugadorGolpeador);
+
+                if (objetivo != null && jugadorGolpeador != null)
+                {
+                    brujaGolpeada = objetivo.transform;
+                    golpesDados = true;
+                    proximoGolpe = (float)ahora;
+                    Debug.Log("[Prueba] empiezo a golpear a una bruja (vida 3) para ver si se puede eliminar");
+                }
+                else
+                {
+                    resultadoGolpes = "no habia bruja cerca";
+                }
+
                 Debug.Log("[Prueba] proyectiles de bruja vistos en vuelo (maximo simultaneo): " + proyectilesVistos
                     + " | distancia bruja-jugador al final: " + distanciaBrujaJugador.ToString("0.00")
                     + " (la bruja mantiene distancia: huye)");
@@ -221,9 +269,25 @@ public static class PruebaRuntime
             }
         }
 
-        // Pruebas funcionales dentro del nivel del jefe
+        // Nivel del jefe: registro con cuanta vida llega y si muere
         if (Pasos[paso].escena == "JefeFinal")
         {
+            if (!vidaArenaRegistrada && ahora - inicioPaso >= 0.5)
+            {
+                vidaArenaRegistrada = true;
+                Debug.Log("[Prueba] el jugador entra a la arena con vida " + DatosJugador.vida);
+            }
+
+            if (muerteEnArena < 0f && vidaArenaRegistrada && ahora - inicioPaso > 1.0)
+            {
+                if (UnityEngine.Object.FindAnyObjectByType<Personaje>() == null)
+                {
+                    muerteEnArena = (float)(ahora - inicioPaso);
+                    Debug.Log("[Prueba] el jugador murio en la arena a los " + muerteEnArena.ToString("0.0")
+                        + " s (quieto, sin esquivar)");
+                }
+            }
+
             if (!funcionalEmpezado && ahora - inicioPaso >= 8.0)
             {
                 funcionalEmpezado = true;
@@ -378,6 +442,9 @@ public static class PruebaRuntime
                 }
             }
         }
+
+        Debug.Log("[Prueba] bruja golpeada por el jugador -> " + resultadoGolpes);
+        Debug.Log("[Prueba] muerte del jugador en la arena: " + (muerteEnArena < 0f ? "sobrevivio los 14 s" : muerteEnArena.ToString("0.0") + " s"));
 
         if (errores == 0)
         {

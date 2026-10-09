@@ -321,3 +321,71 @@ Pedidos y cómo quedaron, con la medición que lo respalda.
   proyectil se siente justo.
 - La arena del jefe sigue siendo la geometría de las cavernas limpia.
 - El `push` sigue bloqueado por permisos (403).
+
+---
+
+## Iteración 7 — 2026-10-08 22:44 (bugs reportados al jugar)
+
+Lo que reportó el dueño y lo que se encontró al revisarlo.
+
+### 1. El goblin se veía como ojo (murciélago)
+
+- **Causa real**: el clip `OrcoCamina.anim` (que es el estado por defecto del goblin) animaba el
+  `m_Sprite` con los **4 sprites de `Eye-Bat.png`**. La animación de caminar del goblin había quedado
+  con las imágenes del murciélago.
+- **Arreglo**: se reescribieron las curvas de sprite (`AnimationUtility.SetObjectReferenceCurve`) con
+  los sprites de `Golblin-S1-Walk-Sheet.png`. Verificado: `OrcoCamina.anim` ahora referencia 10 veces
+  el sheet del goblin y 0 veces el del ojo.
+- Además `OrcoAtaca.anim` y `OrcoMuere.anim` **no tenían ninguna curva de sprite** (por eso el golpe no
+  cambiaba la imagen): se les creó la curva con `Goblin-S1-Attack-Sheet` (4 sprites) y
+  `Golblin-S1-Damage-Sheet` (3 sprites).
+- El murciélago quedaba roto por este arreglo (compartía controlador), así que se le dio el suyo:
+  `Assets/Animaciones/OrcoFinal (2).controller`, que ya existía sin usar, más los triggers `Ataca` y
+  `Muere` que dispara `Orco.cs`.
+
+### 2. Las brujas no recibían daño
+
+- Tenían collider (CapsuleCollider2D) pero **tag `Untagged`**, y `Espada`/`Flecha` solo dañaban a los de
+  tag `Orco`, así que eran inmortales.
+- **Arreglo**: `Bruja.cs` ahora tiene vida (3), recibe golpes (`RecibirGolpe`, mismo nombre ASCII que se
+  le agregó a `Orco.cs`), parpadea, retrocede y muere; `Espada`/`Flecha` buscan `Orco` **o** `Bruja`.
+- Verificado en ejecución: 4 golpes espaciados → "SI: la bruja desapareció al morir".
+
+### 3. El proyectil de la bruja era una flecha
+
+- Se generó un sprite propio de **bola de magia verde** (`Assets/Sprites/ProyectilBruja.png`, 24x24 con
+  alfa, hecho con un codificador PNG propio) y se asignó al prefab (con su collider ajustado a 0,5x0,5).
+
+### 4. La tienda aparecía al final del nivel 3
+
+- Estado real: **`PanelTienda` estaba activo en `SampleScene2` y en `JefeFinal`** (venía así en los
+  archivos de escena). En el nivel del jefe, además, no debería existir.
+- **Arreglo**: en el pueblo y las cavernas la tienda queda cerrada; en el nivel del jefe se **borró**
+  la tienda y el tendero. `UIManager.Start()` además fuerza `tienda.SetActive(false)` y `timeScale = 1`.
+
+### 5. Botones del menú principal desalineados
+
+- Estaban **superpuestos**: los dos botones miden 157 px de alto y el clon de "Continuar" estaba solo
+  90 px debajo del de EMPEZAR.
+- **Arreglo**: mismo ancho, misma x, y separación de alto + 20 px (y=182 y y=5).
+
+### 6. "No puedo probar la pelea del jefe"
+
+- La tienda activa en la escena del jefe tapaba la pantalla; ya está resuelta (punto 4).
+- Dato para el balance que salió de la prueba: el jugador **llega a la arena con 2 de 5 corazones** si
+  no cura, y **muere a los 4 s quieto**. Puede que la dificultad esté alta.
+
+### Verificación
+
+| Prueba | Resultado |
+|---|---|
+| Compilación | 0 errores |
+| Integridad de escenas | 5 escenas, 0 scripts faltantes, 0 problemas |
+| Ejecución (Play mode) | Sin excepciones; bruja eliminable; tienda fuera del jefe; 5 enemigos en cavernas |
+| Build de Windows | `Build: Succeeded errores=0` |
+
+### Pendiente de aclarar con el dueño
+
+- **"Doble sonido"**: no pude reproducirlo. Las `AudioSource` de las escenas están **sin clip**
+  asignado, así que no hay música duplicada por ese lado; la música la pone un único `MusicaFondo`.
+  Falta saber qué sonido exactamente se escucha dos veces.

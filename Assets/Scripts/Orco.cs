@@ -18,6 +18,12 @@ public class Orco : MonoBehaviour
 
     public float VelocidadAgente { get { return agente != null ? agente.speed : 0f; } }
 
+    // Nombre ASCII para que las armas puedan golpear tanto a un orco como a una bruja
+    public void RecibirGolpe(Transform origenAtaque)
+    {
+        RecibirDaño(origenAtaque);
+    }
+
     public void PonerVelocidad(float velocidad) { if (agente != null) agente.speed = velocidad; }
     public void PonerDetenido(bool detenido) { if (agente != null) agente.isStopped = detenido; }
     public void PonerRangoAtaque(float rango) { rangoAtaque = rango; }

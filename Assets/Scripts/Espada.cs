@@ -20,14 +20,15 @@ public class Espada : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D otro)
     {
-        if (otro.CompareTag("Orco"))
+        Orco orco = otro.GetComponent<Orco>();
+        if (orco != null)
         {
-            Orco orco = otro.GetComponent<Orco>();
-
-            if (orco != null)
-            {
-                orco.RecibirDaño(personaje);
-            }
+            if (otro.CompareTag("Orco")) orco.RecibirGolpe(personaje);
+            return;
         }
+
+        // Las brujas no llevan tag "Orco": se golpean por componente
+        Bruja bruja = otro.GetComponent<Bruja>();
+        if (bruja != null) bruja.RecibirGolpe(personaje);
     }
 }

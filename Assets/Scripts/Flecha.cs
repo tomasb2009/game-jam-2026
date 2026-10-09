@@ -31,12 +31,14 @@ public class Flecha : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D otro)
     {
-        if (otro.CompareTag("Orco"))
+        if (otro.CompareTag("Orco") || otro.GetComponent<Bruja>() != null)
         {
             Orco orco = otro.GetComponent<Orco>();
-            if (orco != null)
+            if (orco != null) orco.RecibirGolpe(origenAtaque);
+            else
             {
-                orco.RecibirDaño(origenAtaque);
+                Bruja bruja = otro.GetComponent<Bruja>();
+                if (bruja != null) bruja.RecibirGolpe(origenAtaque);
             }
 
             Destroy(gameObject);
