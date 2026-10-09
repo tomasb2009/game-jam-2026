@@ -27,6 +27,10 @@ public class Desactivar : MonoBehaviour
 
         while (true)
         {
+            // Un Animator sin controller (o sin capas) no tiene estado que consultar:
+            // GetCurrentAnimatorStateInfo(0) tira ArgumentOutOfRangeException.
+            if (anim == null || anim.runtimeAnimatorController == null || anim.layerCount == 0) break;
+
             AnimatorStateInfo info = anim.GetCurrentAnimatorStateInfo(0);
 
             if (!anim.IsInTransition(0) && info.normalizedTime >= 1f) break;

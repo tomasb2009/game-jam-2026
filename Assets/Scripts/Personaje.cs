@@ -69,6 +69,11 @@ public class Personaje : MonoBehaviour
     private void Start()
     {
         // Recupera la vida guardada al venir de otra escena y actualiza la barra
+        // Si la partida anterior termino con muerte, DatosJugador.vida queda en 0 y
+        // el jugador del nivel siguiente nacia "muerto": no podia recibir heridas ni
+        // disparar la derrota. Un nivel nunca debe empezar con 0 corazones.
+        if (DatosJugador.vida <= 0) DatosJugador.vida = DatosJugador.VIDA_MAXIMA;
+
         vidaPersonaje = DatosJugador.vida;
         if (uiManager != null) uiManager.SumaCorazones(vidaPersonaje);
     }
@@ -332,7 +337,9 @@ public class Personaje : MonoBehaviour
 
                 if (AudioManager.Instance != null) AudioManager.Instance.ReproducirSonido(sonidoMuerte);
 
-                Invoke(nameof(Morir), 1f);
+                // WaitForSecondsRealtime: si el tiempo esta congelado (pausa, tienda)
+                // Invoke() no dispara nunca y la partida quedaria sin jugador ni derrota.
+                StartCoroutine(MorirConRetraso(1f));
             }
 
             else
@@ -352,6 +359,12 @@ public class Personaje : MonoBehaviour
             DatosJugador.vida = vidaPersonaje;
             if (uiManager != null) uiManager.SumaCorazones(vidaPersonaje);
         }
+    }
+
+    private IEnumerator MorirConRetraso(float segundos)
+    {
+        yield return new WaitForSecondsRealtime(segundos);
+        Morir();
     }
 
     private void Morir()
