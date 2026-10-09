@@ -169,3 +169,43 @@ temporal fuera del proyecto, git y curl). El gasto de OpenRouter se limita al mo
    pórtico, agregar el botón Continuar y ordenar las build settings.
 4. `-executeMethod ConstruirContenidoFinal.CompilarWindows` para comprobar que el juego se puede
    distribuir, y reportar con la evidencia de los logs.
+
+---
+
+## Iteración 4 — 2026-10-08 21:34 (compilación, contenido final y build, todo verificado)
+
+Con la licencia activada por el dueño, corrí el editor en lote y **por primera vez el proyecto se
+compiló de verdad**.
+
+### Resultados reales (logs en `%LOCALAPPDATA%/hermes/cache/scratch/`)
+
+| Paso | Comando | Resultado |
+|---|---|---|
+| Import + compilación | `Unity.exe -batchmode -nographics -quit -logFile wp_import.log` | **206 ensamblados compilados.** 3 errores, los 3 míos en el script de editor (`List<string>` pasado donde se esperaba `string[]`, y `FindFirstObjectByType` obsoleto). **Los 20 scripts del juego y todo lo que agregué no dieron ni un error.** |
+| Construcción de contenido | `-executeMethod ConstruirContenidoFinal.Construir` | 0 errores. Log propio: escena del jefe creada desde `SampleScene2`, arena limpia (12 objetos del nivel anterior quitados), jefe colocado en (3,00, -3,20), portal de `SampleScene2` apuntando a `JefeFinal`, botón Continuar agregado al menú, cierre agregado a la cinemática, build settings ordenados. |
+| Build de Windows | `-executeMethod ConstruirContenidoFinal.CompilarWindows` | **`[WarriorPath] Build: Succeeded errores=0`** → `Builds/Windows/TheWarriorPath.exe` |
+| Verificación de escenas | `-executeMethod VerificarEscenas.Verificar` | **5 escenas, 0 scripts faltantes, 0 problemas.** Avisos esperados en la cinemática final (sin UI ni pórtico, por diseño). |
+
+### Comprobaciones puntuales sobre los archivos que escribió Unity
+
+- `Assets/Scenes/JefeFinal.unity` existe (2,9 MB) y el jefe tiene `vidaOrco = 24`, `rangoAtaque = 1.6`,
+  `cooldownAtaque = 1.8` y `personaje` apuntando al jugador.
+- `MenuPrincipal.unity`: `botonContinuar` apunta a un GameObject `BotonContinuar`, con etiqueta
+  "Continuar" y llamada persistente a `MenuPrincipal.Continuar` (verificado en el YAML:
+  `m_MethodName: Continuar`, `m_TargetAssemblyTypeName: MenuPrincipal, Assembly-CSharp`).
+- `SampleScene2.unity`: `Portal.escenaDestino = JefeFinal`.
+- `SampleScene3.unity`: `CierreDeCinamatica` con `FinDeCinematica` (42 s → menú principal).
+- Build settings en orden: MenuPrincipal → SampleScene → SampleScene2 → JefeFinal → SampleScene3.
+
+### Lo que NO está verificado (y por qué)
+
+- **Nadie jugó el juego todavía.** Las pruebas de humo que intenté desde la consola no sirven:
+  con `-nographics` el dispositivo gráfico es nulo y el jugador no llega a cargar la escena, y sin
+  `-nographics` el proceso no consigue crear el dispositivo (mi consola no tiene sesión interactiva).
+  Falta una partida real: menú → pueblo → cavernas → jefe → victoria.
+- Balance de dificultad, sensación de los controles y diseño de la arena: requieren jugar.
+
+### Estado del repositorio
+
+5 commits locales (último: `b163634`). El `push` sigue bloqueado por permisos (403, cuenta sin
+escritura en el repo del compañero). Se agregó `*.slnx` al `.gitignore` (Unity generó ese archivo).

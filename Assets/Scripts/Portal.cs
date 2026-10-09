@@ -4,10 +4,15 @@ public class Portal : MonoBehaviour
 {
     [SerializeField] private string escenaDestino;
 
-    // La usa el script de editor para reordenar los niveles
+    // Las usan los scripts de editor para reordenar los niveles y verificarlos
     public void PonerDestino(string destino)
     {
         escenaDestino = destino;
+    }
+
+    public string Destino()
+    {
+        return escenaDestino;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
