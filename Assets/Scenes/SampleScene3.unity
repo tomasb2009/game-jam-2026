@@ -670,8 +670,8 @@ MonoBehaviour:
   m_text: "Mis habilidades no se hay igualado desde la \xFAltima batalla, se han
     incrementado. No me venceras"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 0acd9b3f0bef1944eb0262905ee1a875, type: 2}
-  m_sharedMaterial: {fileID: 871129651352326595, guid: 0acd9b3f0bef1944eb0262905ee1a875, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 39537bfbf585439418eb591aa34272ee, type: 2}
+  m_sharedMaterial: {fileID: 653362669112313465, guid: 39537bfbf585439418eb591aa34272ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

@@ -32,9 +32,12 @@ public class UIManager : MonoBehaviour
     {
         // Restaura monedas e inventario guardados al cambiar de escena
         // Ninguna escena debe arrancar con el tiempo congelado por la anterior,
-        // ni con la tienda abierta (regla del diseno)
+        // ni con la tienda abierta (regla del diseno).
+        // OJO: en la escena del menu este campo apunta por error al Panel principal,
+        // asi que solo se apaga si de verdad es la tienda (si no, se borraba el menu).
         Time.timeScale = 1f;
-        if (tienda != null) tienda.SetActive(false);
+
+        if (tienda != null && EsLaTienda(tienda)) tienda.SetActive(false);
 
         totalMoendas = DatosJugador.monedas;
 
@@ -142,6 +145,11 @@ public class UIManager : MonoBehaviour
         }
 
         Avisar("Compraste " + NombreDelObjeto(objeto));
+    }
+
+    private bool EsLaTienda(GameObject objeto)
+    {
+        return objeto.name.ToLower().Contains("tienda");
     }
 
     private void Avisar(string mensaje)

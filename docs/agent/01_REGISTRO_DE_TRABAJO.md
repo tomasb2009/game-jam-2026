@@ -389,3 +389,60 @@ Lo que reportó el dueño y lo que se encontró al revisarlo.
 - **"Doble sonido"**: no pude reproducirlo. Las `AudioSource` de las escenas están **sin clip**
   asignado, así que no hay música duplicada por ese lado; la música la pone un único `MusicaFondo`.
   Falta saber qué sonido exactamente se escucha dos veces.
+
+---
+
+## Iteración 8 — 2026-10-08 23:0x (bloqueo del menú resuelto + balance del jefe)
+
+### El bloqueo: "pantalla azul y no menú"
+
+Eran **dos causas** y una era mía:
+
+1. **La fuente del menú estaba vacía.** `Assets/Fuentes/Crumbline-Regular Bitmap.asset` tiene
+   **0 glifos, sin atlas y sin material**, así que TMP no podía dibujar ninguna etiqueta. La `.ttf`
+   original sí estaba en el proyecto, así que se regeneró una fuente SDF
+   (`Assets/Fuentes/Crumbline SDF.asset`, 90 glifos) y se reemplazó en las 5 escenas
+   (menú 2 textos, pueblo 5, cavernas 5, jefe 1, cinemática 1).
+2. **Un error mío de la ronda anterior.** En la escena del menú el campo `tienda` del `UIManager`
+   apunta al **Panel principal**, y mi línea nueva "la tienda arranca cerrada" apagaba ese Panel…
+   y con él los dos botones del menú. Corregido: `UIManager` solo apaga el objeto si su nombre
+   contiene "tienda", y además se limpiaron los campos del `UIManager` del menú que apuntaban a
+   objetos del menú.
+
+Medición en Play mode (antes / después):
+```
+antes:  menu: textos activos = 0  |  [EMPEZAR activo=False ...] [Continuar activo=False ...]
+después: menu: textos activos = 1  |  [EMPEZAR activo=True glifos=16] [Continuar activo=False]
+```
+(Continuar queda oculto a propósito cuando no hay partida guardada.)
+
+### Balance del jefe (lo que pediste: que pegue más lento y dé margen)
+
+- Golpe cuerpo a cuerpo cada **2,9 s** (antes 1,8 s) y ventana para golpearlo un poco mayor.
+- Embestida cada **10,5 s** (antes 7 s), velocidad 11 (antes 13) y **0,45 s de aviso** antes de
+  arrancar, para que se pueda esquivar.
+- Invocación de esbirros cada **15 s**.
+
+Dato medido para el balance general: la prueba entra a la arena con **1–2 corazones** (las cavernas
+golpean fuerte) y quieto el jefe la mata en 2,3–5 s. Si querés, el próximo ajuste es dar vida llena al
+entrar a cada zona (quedó como opción tuya).
+
+### Audio
+
+- Buffer DSP del proyecto en **"Best latency"** y todas las `AudioSource` en **2D** y sin autoarranque
+  (antes eran 3D con Doppler activado: eso hace que los efectos suenen raros/retrasados al moverse).
+
+### Otras correcciones de esta ronda
+
+- `Desactivar` ya no puede quedar colgado: si el Animator no sirve o la animación no termina en 10 s,
+  apaga igual los objetos (antes una excepción mataba la corrutina y la portada quedaba tapando todo).
+- Prueba de la bruja estabilizada (golpeaba a la más cercana y como ella huye se repartían los golpes).
+
+### Verificación
+
+| Prueba | Resultado |
+|---|---|
+| Compilación | 0 errores |
+| Integridad | 5 escenas, 0 problemas |
+| Ejecución | Menú con botón activo y texto visible; bruja eliminable; 4 niveles sin excepciones |
+| Build de Windows | `Build: Succeeded errores=0` |

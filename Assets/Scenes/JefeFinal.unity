@@ -2084,8 +2084,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "0\n "
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 0acd9b3f0bef1944eb0262905ee1a875, type: 2}
-  m_sharedMaterial: {fileID: 871129651352326595, guid: 0acd9b3f0bef1944eb0262905ee1a875, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 39537bfbf585439418eb591aa34272ee, type: 2}
+  m_sharedMaterial: {fileID: 653362669112313465, guid: 39537bfbf585439418eb591aa34272ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -3694,11 +3694,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5280721924438399131, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
       propertyPath: cooldownAtaque
-      value: 1.8
+      value: 2.9
       objectReference: {fileID: 0}
     - target: {fileID: 5280721924438399131, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
       propertyPath: fuerzaRetroceso
       value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5280721924438399131, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
+      propertyPath: tiempoInvulnerable
+      value: 0.55
       objectReference: {fileID: 0}
     - target: {fileID: 7890320449089468717, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
       propertyPath: m_LocalPosition.x
@@ -3770,13 +3774,14 @@ MonoBehaviour:
   velocidadExtraPorFase: 0.7
   rangoExtraPorFase: 0.15
   cooldownMenosPorFase: 0.35
-  intervaloEmbestida: 7
-  velocidadEmbestida: 13
-  duracionEmbestida: 0.55
+  intervaloEmbestida: 10.5
+  avisoEmbestida: 0.45
+  velocidadEmbestida: 11
+  duracionEmbestida: 0.45
   radioEmbestida: 1.1
   esbirroPrefab: {fileID: 292542994971351556, guid: 97012c0252d66354087441ef7a33646f, type: 3}
   esbirrosPorInvocacion: 3
-  intervaloInvocacion: 13
+  intervaloInvocacion: 15
   radioInvocacion: 2.5
   recursoSonidoEmbestida: Audio/sfx_golpe_jefe
   retrasoVictoria: 2.2
@@ -93161,7 +93166,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: fc56501cba31f9e41bddeeb555da5a20, type: 3}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 0.545
   m_Pitch: 1
   Loop: 1
@@ -93169,7 +93174,7 @@ AudioSource:
   Spatialize: 0
   SpatializePostEffects: 0
   Priority: 128
-  DopplerLevel: 1
+  DopplerLevel: 0
   MinDistance: 1
   MaxDistance: 500
   Pan2D: 0
@@ -94669,7 +94674,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
@@ -94677,7 +94682,7 @@ AudioSource:
   Spatialize: 0
   SpatializePostEffects: 0
   Priority: 128
-  DopplerLevel: 1
+  DopplerLevel: 0
   MinDistance: 1
   MaxDistance: 500
   Pan2D: 0

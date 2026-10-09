@@ -3634,8 +3634,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Pocion Velocidad $5
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 0acd9b3f0bef1944eb0262905ee1a875, type: 2}
-  m_sharedMaterial: {fileID: 871129651352326595, guid: 0acd9b3f0bef1944eb0262905ee1a875, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 39537bfbf585439418eb591aa34272ee, type: 2}
+  m_sharedMaterial: {fileID: 938320767947445387, guid: 39537bfbf585439418eb591aa34272ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -3752,8 +3752,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "0\n "
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 0acd9b3f0bef1944eb0262905ee1a875, type: 2}
-  m_sharedMaterial: {fileID: 871129651352326595, guid: 0acd9b3f0bef1944eb0262905ee1a875, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 39537bfbf585439418eb591aa34272ee, type: 2}
+  m_sharedMaterial: {fileID: 653362669112313465, guid: 39537bfbf585439418eb591aa34272ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -4234,8 +4234,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Pocion Salud Mediana $2
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 0acd9b3f0bef1944eb0262905ee1a875, type: 2}
-  m_sharedMaterial: {fileID: 871129651352326595, guid: 0acd9b3f0bef1944eb0262905ee1a875, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 39537bfbf585439418eb591aa34272ee, type: 2}
+  m_sharedMaterial: {fileID: 938320767947445387, guid: 39537bfbf585439418eb591aa34272ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -27115,8 +27115,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "Pocion Salud Peque\xF1a $1"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 0acd9b3f0bef1944eb0262905ee1a875, type: 2}
-  m_sharedMaterial: {fileID: 871129651352326595, guid: 0acd9b3f0bef1944eb0262905ee1a875, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 39537bfbf585439418eb591aa34272ee, type: 2}
+  m_sharedMaterial: {fileID: 938320767947445387, guid: 39537bfbf585439418eb591aa34272ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -58898,7 +58898,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: fc56501cba31f9e41bddeeb555da5a20, type: 3}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 0.545
   m_Pitch: 1
   Loop: 1
@@ -58906,7 +58906,7 @@ AudioSource:
   Spatialize: 0
   SpatializePostEffects: 0
   Priority: 128
-  DopplerLevel: 1
+  DopplerLevel: 0
   MinDistance: 1
   MaxDistance: 500
   Pan2D: 0
@@ -60473,8 +60473,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 0acd9b3f0bef1944eb0262905ee1a875, type: 2}
-  m_sharedMaterial: {fileID: 871129651352326595, guid: 0acd9b3f0bef1944eb0262905ee1a875, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 39537bfbf585439418eb591aa34272ee, type: 2}
+  m_sharedMaterial: {fileID: 938320767947445387, guid: 39537bfbf585439418eb591aa34272ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -60624,7 +60624,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
@@ -60632,7 +60632,7 @@ AudioSource:
   Spatialize: 0
   SpatializePostEffects: 0
   Priority: 128
-  DopplerLevel: 1
+  DopplerLevel: 0
   MinDistance: 1
   MaxDistance: 500
   Pan2D: 0

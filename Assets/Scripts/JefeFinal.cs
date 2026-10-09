@@ -14,12 +14,13 @@ public class JefeFinal : MonoBehaviour
     [SerializeField] private float umbralFase3 = 0.33f;
     [SerializeField] private float velocidadExtraPorFase = 0.7f;
     [SerializeField] private float rangoExtraPorFase = 0.15f;
-    [SerializeField] private float cooldownMenosPorFase = 0.35f;
+    [SerializeField] private float cooldownMenosPorFase = 0.25f;
 
     [Header("Embestida")]
-    [SerializeField] private float intervaloEmbestida = 7f;
-    [SerializeField] private float velocidadEmbestida = 13f;
-    [SerializeField] private float duracionEmbestida = 0.55f;
+    [SerializeField] private float intervaloEmbestida = 10.5f;   // pega mas espaciado
+    [SerializeField] private float avisoEmbestida = 0.45f;        // tiempo para esquivar
+    [SerializeField] private float velocidadEmbestida = 11f;
+    [SerializeField] private float duracionEmbestida = 0.45f;
     [SerializeField] private float radioEmbestida = 1.1f;
 
     [Header("Esbirros")]
@@ -155,6 +156,12 @@ public class JefeFinal : MonoBehaviour
         if (jugador == null) yield break;
 
         embistiendo = true;
+
+        // Aviso: se queda quieto un instante antes de embestir, para que se pueda esquivar
+        orco.PonerDetenido(true);
+        yield return new WaitForSeconds(avisoEmbestida);
+
+        if (terminado || orco.EstaMuerto) { embistiendo = false; yield break; }
 
         Vector2 direccion = ((Vector2)jugador.position - (Vector2)transform.position).normalized;
         if (direccion == Vector2.zero) direccion = Vector2.right;

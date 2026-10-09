@@ -487,8 +487,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: EMPEZAR
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 0acd9b3f0bef1944eb0262905ee1a875, type: 2}
-  m_sharedMaterial: {fileID: 871129651352326595, guid: 0acd9b3f0bef1944eb0262905ee1a875, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 39537bfbf585439418eb591aa34272ee, type: 2}
+  m_sharedMaterial: {fileID: 653362669112313465, guid: 39537bfbf585439418eb591aa34272ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -852,7 +852,7 @@ MonoBehaviour:
   cajaTexto: {fileID: 0}
   textoDialogo: {fileID: 0}
   panelEquipo: {fileID: 0}
-  tienda: {fileID: 1792679546}
+  tienda: {fileID: 0}
   textoAviso: {fileID: 0}
 --- !u!114 &797651509
 MonoBehaviour:
@@ -1093,7 +1093,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: fc56501cba31f9e41bddeeb555da5a20, type: 3}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 0.299
   m_Pitch: 1
   Loop: 1
@@ -1101,7 +1101,7 @@ AudioSource:
   Spatialize: 0
   SpatializePostEffects: 0
   Priority: 128
-  DopplerLevel: 1
+  DopplerLevel: 0
   MinDistance: 1
   MaxDistance: 500
   Pan2D: 0
@@ -1345,8 +1345,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Continuar
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 0acd9b3f0bef1944eb0262905ee1a875, type: 2}
-  m_sharedMaterial: {fileID: 871129651352326595, guid: 0acd9b3f0bef1944eb0262905ee1a875, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 39537bfbf585439418eb591aa34272ee, type: 2}
+  m_sharedMaterial: {fileID: 653362669112313465, guid: 39537bfbf585439418eb591aa34272ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1565,7 +1565,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -1527, y: 5.1410065}
+  m_AnchoredPosition: {x: -1527, y: 5.140991}
   m_SizeDelta: {x: 460.463, y: 156.859}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1660057539 &9223372036854775807

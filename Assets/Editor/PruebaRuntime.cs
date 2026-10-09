@@ -32,6 +32,7 @@ public static class PruebaRuntime
     private static int paso;
     private static double inicioPaso;
     private static bool capturando;
+    private static bool menuRevisado;
     private static bool conteoHecho;
     private static bool golpesDados;
     private static int golpesLanzados;
@@ -168,6 +169,49 @@ public static class PruebaRuntime
             return;
         }
 
+        // Menu: compruebo que los textos tengan fuente con glifos (si la fuente esta
+        // vacia, TMP no dibuja nada y el menu se ve como una pantalla vacia)
+        if (Pasos[paso].escena == "MenuPrincipal" && !menuRevisado && ahora - inicioPaso >= 1.5)
+        {
+            menuRevisado = true;
+
+            // Ojo: TMP_Text es abstracta y FindObjectsByType no la resuelve; hay que
+            // buscar la clase concreta TextMeshProUGUI.
+            TMPro.TMP_Text[] textos = UnityEngine.Object.FindObjectsByType<TMPro.TextMeshProUGUI>(FindObjectsSortMode.None);
+            int conGlifos = 0;
+            string detalle = "";
+
+            foreach (TMPro.TMP_Text tt in textos)
+            {
+                if (tt == null) continue;
+
+                int glifos = tt.font != null && tt.font.characterTable != null ? tt.font.characterTable.Count : 0;
+                if (glifos > 0) conGlifos++;
+
+                detalle += " [" + tt.text + " glifos=" + glifos + "]";
+            }
+
+            Debug.Log("[Prueba] menu: textos activos = " + textos.Length + ", con fuente usable = " + conGlifos);
+            Debug.Log("[Prueba] detalle del menu:" + detalle);
+
+            // Todos los textos, incluso los de objetos desactivados
+            TMPro.TMP_Text[] todos = UnityEngine.Object.FindObjectsByType<TMPro.TextMeshProUGUI>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            string todo = "";
+            foreach (TMPro.TMP_Text tt in todos)
+            {
+                if (tt == null) continue;
+                int glifos = tt.font != null && tt.font.characterTable != null ? tt.font.characterTable.Count : 0;
+                todo += " [" + tt.text + " activo=" + tt.gameObject.activeInHierarchy + " glifos=" + glifos + "]";
+            }
+            Debug.Log("[Prueba] TODOS los textos del menu (" + todos.Length + "):" + todo);
+
+            foreach (UnityEngine.GameObject raiz in UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects())
+            {
+                Debug.Log("[Prueba] raiz del menu: " + raiz.name + " activo=" + raiz.activeInHierarchy);
+            }
+            return;
+        }
+
         // Cavernas: mido que las brujas se muevan, que disparen y cuantos enemigos hay
         if (Pasos[paso].escena == "SampleScene2")
         {
@@ -213,12 +257,15 @@ public static class PruebaRuntime
                 golpesLanzados++;
 
                 Personaje quien = UnityEngine.Object.FindAnyObjectByType<Personaje>();
-                Bruja cercana = BrujaMasCercana(quien);
+
+                // Siempre la misma bruja: si se busca la mas cercana cada vez, como ella
+                // huye, los golpes se repartian entre brujas distintas y ninguna moria.
+                Bruja cercana = brujaGolpeada != null ? brujaGolpeada.GetComponent<Bruja>() : null;
 
                 if (cercana != null && quien != null)
                 {
                     cercana.RecibirGolpe(quien.transform);
-                    Debug.Log("[Prueba] golpe " + golpesLanzados + " a la bruja");
+                    Debug.Log("[Prueba] golpe " + golpesLanzados + " a la misma bruja");
                 }
             }
 
