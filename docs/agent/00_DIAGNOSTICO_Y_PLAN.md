@@ -63,8 +63,8 @@ Instalarlo implica ~10 GB de descarga y el inicio de sesión con la cuenta de Un
 | B1 | **Alta** | Los orcos/orcos finales **instanciados en runtime** por `BrujaSpawner` nacen con `personaje = null` y `puntosRuta = [null×4]` (valores por defecto del prefab). `Orco.Update()` hace `personaje.position` sin comprobar → `NullReferenceException` en cada frame. La mecánica «la bruja invoca 4 orcos» queda rota. | `Orco.prefab`: `personaje: {fileID: 0}` y `puntosRuta` con 4 entradas `{fileID: 0}`. Las instancias colocadas a mano en la escena **sí** tienen override (`propertyPath: personaje` / `puntosRuta.Array.data[i]`), pero `BrujaSpawner` usa los valores del prefab. |
 | B2 | **Alta** | `UIManager.Start()` escribe en `textoMonedas.text` y luego itera el inventario usando `panelEquipo`. En `MenuPrincipal.unity` ese componente existe pero **todos sus campos están vacíos** (`textoMonedas`, `imagenBarraVida`, `cajaTexto`, `textoDialogo`, `panelEquipo` = `{fileID: 0}`, `spritesBarraVida` = lista vacía) → excepción al entrar al menú. | Auditoría de campos serializados de `UIManager` en `MenuPrincipal.unity`. |
 | B3 | Media | `Tendero.cs` abre la tienda y **congela el tiempo ante cualquier colisión** (`OnCollisionEnter2D` sin comprobar tag ni estado). Cualquier cuerpo con collider que lo toque abre la tienda. | `Assets/Scripts/Tendero.cs` (12 líneas, sin filtro). |
-| B4 | Media | El icono de arma nunca cambia: `SelectorArmaUI.spriteEspada` y `spriteArco` apuntan **al mismo** PNG `Group 1 (1).png`. | Campos de `SelectorArmaUI` en `SampleScene` y `SampleScene2`. |
-| B5 | Media | El arco no tiene feedback visual: `spriteArcoReposo`, `spriteArcoTensado` y `spriteArcoSoltado` apuntan los tres a `frames.png`. Cargar/disparar se ve idéntico. | Campos de `Personaje.cs` en ambas escenas. |
+| ~~B4~~ | **RETIRADO** | Falso positivo mío: `spriteEspada` y `spriteArco` sí son **sub-sprites distintos** del mismo PNG (`fileID 1529004468571396027` vs `-8733595206056069556`). Al auditar miré la ruta del PNG y no el `fileID` del sub-sprite. El icono de arma está bien. | `SampleScene.unity:5528-5529` |
+| ~~B5~~ | **RETIRADO** | Mismo error de método: son tres sub-sprites distintos de `frames.png` (`-3227606743446095257`, `-800886026776649501`, `3203698396550408301`). Los estados del arco sí estaban cableados. | `SampleScene.unity:26685-26687` |
 | B6 | **Alta (jugabilidad)** | Morir no tiene salida: `Personaje.Morir()` ejecuta `DatosJugador.Reiniciar()` y `Destroy(gameObject)`. **No hay pantalla de derrota, ni reinicio, ni respawn**: el juego queda sin jugador. | `Personaje.cs` líneas finales. |
 | B7 | **Alta (contenido)** | **No existe el enfrentamiento final.** `SampleScene3` contiene sólo `Main Camera`, `EventSystem`, `Cutscene46`, `Canvas`, `Text (TMP)` y una `CinemachineCamera`: es una cinemática y **no tiene pórtico de salida ni jefe**. `OrcoFinal.prefab` existe pero sólo se usa en `SampleScene`. Tampoco hay pantalla de victoria. | Parseo de `SampleScene3.unity` (6 GameObjects) y `EditorBuildSettings`. |
 | B8 | Media | No hay música: ningún `AudioSource` del proyecto tiene `m_AudioClip` asignado (`Music` en `MenuPrincipal` y `SampleScene`, y el `AudioSource` del `AudioManager` están vacíos), pese a existir `musica de fondo.wav`. Todos los `AudioClip` de efectos sí están cableados. | Auditoría de `m_AudioClip` en escenas. |
@@ -73,6 +73,8 @@ Instalarlo implica ~10 GB de descarga y el inicio de sesión con la cuenta de Un
 | B11 | Baja | `Moneda.cs` sólo suma si hay suscriptor del evento (`if (sumaMoneda != null)`); sin `UIManager` la moneda ni se destruye. `AudioManager.Instance` se usa sin comprobar null. | `Moneda.cs`, `Flecha.cs`, `Orco.cs`. |
 | B12 | Baja | Tecla de debug: `K` causa daño al jugador en build final (`Personaje.Update`). | `Personaje.cs`. |
 | B13 | Baja | `Orco.Update()` compara posiciones con `==` (igualdad exacta de float) para avanzar por la ruta y no valida que `puntosRuta` tenga elementos. | `Orco.cs`. |
+| B14 | **Alta (progresión)** | `ReiniciarDatos` está activo en `SampleScene` y `SampleScene2` (`m_IsActive: 1`) y su `Awake()` llamaba a `DatosJugador.Reiniciar()`: **cada cambio de nivel borraba monedas, vida e inventario**, contradiciendo lo que promete el comentario de `UIManager`. | `m_IsActive` de ambos GameObjects + `ReiniciarDatos.cs`. |
+| B15 | Baja | El pórtico de `SampleScene2` lleva a `SampleScene3`, que es solo una cinemática sin salida: no hay a dónde ir después. | `Portal.escenaDestino` de `SampleScene2` + contenido de `SampleScene3`. |
 
 ### 3.3 No verificado (no puedo afirmarlo)
 
@@ -86,8 +88,14 @@ Instalarlo implica ~10 GB de descarga y el inicio de sesión con la cuenta de Un
 2. **P1 — Corregir defectos de lógica ya confirmados**: B1, B2, B3, B6, B11, B12, B13 (seguros, sin arte nuevo).
 3. **P2 — Cerrar el arco de juego**: escena de jefe final + pantalla de victoria + pantalla de derrota con reintento (B6, B7).
 4. **P3 — Audio**: música de fondo y sonido de carga de arco (B8), resolviendo el problema legal (B9).
-5. **P4 — Guardado de progreso** (B10) y pulido visual/UX (B4, B5: iconos y estados del arco propios).
-6. **P5 — Balance de dificultad** (vida de enemigos, daño, ritmo) y pase final de prueba en el editor.
+5. **P4 — Guardado de progreso** (B10, implementado) y pulido visual/UX.
+6. **P5 — Balance de dificultad** y pase final de prueba en el editor.
+
+## 4bis. Permisos de repositorio (hallado al intentar subir)
+
+`git push origin main` **falla con 403**: el repo es de `tomasb2009` y la cuenta `AllaDios` (Lauti) no
+tiene permiso de escritura. Los commits quedan locales. Para subir hace falta: (a) que el dueño dé
+permisos de colaborador, (b) un fork + pull request, o (c) que el dueño haga el push.
 
 ## 5. Registro de trabajo
 
