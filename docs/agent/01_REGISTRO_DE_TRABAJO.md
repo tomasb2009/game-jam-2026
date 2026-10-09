@@ -209,3 +209,49 @@ compiló de verdad**.
 
 5 commits locales (último: `b163634`). El `push` sigue bloqueado por permisos (403, cuenta sin
 escritura en el repo del compañero). Se agregó `*.slnx` al `.gitignore` (Unity generó ese archivo).
+
+---
+
+## Iteración 5 — 2026-10-08 21:58 (prueba de ejecución en Play mode: 3 defectos más, encontrados y corregidos)
+
+Como no puedo jugar a mano desde la consola, escribí `Assets/Editor/PruebaRuntime.cs`: abre el editor,
+entra en Play mode y recorre el flujo real del juego (**Menú 3 s → pueblo 14 s → cavernas 10 s →
+nivel del jefe 14 s**), capturando cualquier excepción o error que vengan de código del juego
+(los errores internos del editor, como el indexador de búsqueda, se filtran aparte).
+El estado vive en un archivo porque entrar en Play recarga el dominio y borra las variables estáticas.
+
+### Resultado final (corrida 8)
+
+```
+[Prueba] enemigos 'Orco' invocados por las brujas en las cavernas: 17  (el camino que antes tiraba NullReferenceException)
+[Prueba] barra de vida del jefe existe: True | visible: True
+[Prueba] ANTES de golpear: timeScale = 0 | panel de pausa activo: False
+[Prueba] pantalla de derrota visible tras morir: True | jugador en escena: False | DatosJugador.vida = 0 | Time.timeScale = 0
+[Prueba] RESULTADO: el juego corrio los 4 niveles sin una sola excepcion ni error.
+```
+
+### Defectos que encontró la prueba (los tres corregidos)
+
+| # | Qué pasaba | Causa raíz (medida, no supuesta) | Arreglo |
+|---|---|---|---|
+| B16 | **Morir no terminaba**: el jugador se quedaba tirado, sin pantalla de derrota y sin poder seguir. La partida quedaba trabada. | `Personaje` usaba `Invoke(nameof(Morir), 1f)`, que corre con **tiempo escalado**. El juego puede estar legítimamente en `Time.timeScale = 0` en ese instante (tienda abierta o pausa) y entonces el `Invoke` **nunca dispara**. Lo confirmé midiendo `timeScale = 0` justo antes de morir, con el panel de pausa inactivo. | `MorirConRetraso()` como corrutina con `WaitForSecondsRealtime`, que no depende del tiempo escalado. Verificado: ahora la derrota aparece y el jugador se destruye. |
+| B17 | **Excepción en el menú principal** (`ArgumentOutOfRangeException`) al entrar. | `Desactivar.cs` llamaba a `anim.GetCurrentAnimatorStateInfo(0)` sin comprobar que el Animator tenga controller o capas. | Se corta el bucle si no hay `runtimeAnimatorController` o `layerCount == 0`. |
+| B18 | Un nivel podía arrancar con **0 corazones** (jugador "muerto" desde el inicio: no recibía heridas ni disparaba la derrota). | `DatosJugador.vida` quedaba en 0 tras una muerte y `Personaje.Start()` lo copiaba tal cual. | Si `DatosJugador.vida <= 0` al arrancar el nivel, se restaura a la vida máxima. |
+
+Nota honesta: el escenario de la prueba (el jugador quieto, empujado por 17 enemigos hasta el tendero
+en las cavernas) es lo que dejó `timeScale` en 0 y destapó B16. No fue un fallo de la prueba sino un
+caso real que antes quedaba sin salida.
+
+### Verificado en ejecución (no por lectura de código)
+
+- La Bruja invoca enemigos y **ninguno tira NullReferenceException** (17 vivos en las cavernas): el
+  defecto B1 está resuelto de verdad.
+- El jefe crea su barra de vida (`BarraJefe` visible) → `FinDeJuego` se instancia solo en la escena nueva.
+- Al morir, el jugador se destruye y aparece `PanelFinal` → el arco de derrota funciona.
+- Los 4 niveles corren sin excepciones de código de juego.
+
+### Pendiente
+
+- **Jugarlo con manos humanas** (sensación de control, dificultad, música) y diseñar la arena del jefe
+  como arena real, no como el nivel de cavernas limpio.
+- El `push` sigue bloqueado por permisos (403).
