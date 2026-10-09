@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -39,6 +40,9 @@ public class FinDeJuego : MonoBehaviour
     private GameObject panelBarra;
     private RectTransform rellenoBarra;
     private TMP_Text nombreJefe;
+    private TMP_Text vidaJefe;
+    private Image imagenRelleno;
+    private Coroutine parpadeo;
 
     private readonly Color colorPanel = new Color(0.031f, 0.035f, 0.039f, 0.92f);
     private readonly Color colorBoton = new Color(0.72f, 0.53f, 0.26f, 1f);
@@ -126,18 +130,31 @@ public class FinDeJuego : MonoBehaviour
         rtBarra.anchorMin = new Vector2(0.5f, 1f);
         rtBarra.anchorMax = new Vector2(0.5f, 1f);
         rtBarra.pivot = new Vector2(0.5f, 1f);
-        rtBarra.sizeDelta = new Vector2(900f, 44f);
-        rtBarra.anchoredPosition = new Vector2(0f, -40f);
+        rtBarra.sizeDelta = new Vector2(1100f, 62f);
+        rtBarra.anchoredPosition = new Vector2(0f, -34f);
 
         GameObject relleno = CrearImagen("Relleno", panelBarra.transform, new Color(0.72f, 0.19f, 0.14f, 1f));
         rellenoBarra = relleno.GetComponent<RectTransform>();
+        imagenRelleno = relleno.GetComponent<Image>();
         rellenoBarra.anchorMin = new Vector2(0f, 0f);
         rellenoBarra.anchorMax = new Vector2(1f, 1f);
         rellenoBarra.offsetMin = new Vector2(4f, 4f);
         rellenoBarra.offsetMax = new Vector2(-4f, -4f);
 
-        nombreJefe = CrearTexto("NombreJefe", panelBarra.transform, "EL TIRANO", 30f, TextAlignmentOptions.Center);
+        nombreJefe = CrearTexto("NombreJefe", panelBarra.transform, "EL TIRANO", 34f, TextAlignmentOptions.Center);
+        nombreJefe.color = new Color(1f, 0.95f, 0.85f, 1f);
         Estirar(nombreJefe.gameObject);
+
+        // Vida total y la que le va quedando, en numeros
+        vidaJefe = CrearTexto("VidaJefe", panelBarra.transform, "", 34f, TextAlignmentOptions.Center);
+        vidaJefe.color = Color.white;
+
+        RectTransform rtVida = vidaJefe.rectTransform;
+        rtVida.anchorMin = new Vector2(0.5f, 0f);
+        rtVida.anchorMax = new Vector2(0.5f, 0f);
+        rtVida.pivot = new Vector2(0.5f, 1f);
+        rtVida.sizeDelta = new Vector2(500f, 46f);
+        rtVida.anchoredPosition = new Vector2(0f, -6f);
 
         panelBarra.SetActive(false);
     }
@@ -251,6 +268,26 @@ public class FinDeJuego : MonoBehaviour
 
         float normalizada = vidaMaxima > 0 ? Mathf.Clamp01((float)vida / vidaMaxima) : 0f;
         rellenoBarra.anchorMax = new Vector2(normalizada, 1f);
+
+        if (vidaJefe != null) vidaJefe.text = vida + " / " + vidaMaxima;
+
+        // El relleno destella al recibir un golpe: se nota que le estas pegando
+        if (imagenRelleno != null)
+        {
+            if (parpadeo != null) StopCoroutine(parpadeo);
+            parpadeo = StartCoroutine(ParpadeoDeDano());
+        }
+    }
+
+    private IEnumerator ParpadeoDeDano()
+    {
+        Color normal = new Color(0.72f, 0.19f, 0.14f, 1f);
+        imagenRelleno.color = new Color(1f, 0.86f, 0.55f, 1f);
+
+        yield return new WaitForSecondsRealtime(0.14f);
+
+        if (imagenRelleno != null) imagenRelleno.color = normal;
+        parpadeo = null;
     }
 
     public void OcultarBarraJefe()
@@ -277,7 +314,6 @@ public class FinDeJuego : MonoBehaviour
 
         // Derrota: se reintenta el nivel conservando monedas e inventario
         DatosJugador.vida = DatosJugador.VIDA_MAXIMA;
-        DatosJugador.Guardar();
 
         Time.timeScale = 1f;
         IrA(SceneManager.GetActiveScene().name);

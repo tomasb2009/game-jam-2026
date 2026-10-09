@@ -19,9 +19,7 @@ public class Portal : MonoBehaviour
     {
         if (!other.CompareTag("Player")) return;
 
-        // Autoguardado: al cruzar el portal el progreso queda en disco
-        DatosJugador.nivel = escenaDestino;
-        DatosJugador.Guardar();
+        DatosJugador.nivel = escenaDestino;   // para saber en que nivel esta (sin guardar nada)
 
         TransicionEscena.CargarEscena(escenaDestino);
     }

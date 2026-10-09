@@ -40,7 +40,6 @@ public class MenuPausa : MonoBehaviour
         Time.timeScale = 1f;
 
         DatosJugador.vida = DatosJugador.VIDA_MAXIMA;
-        DatosJugador.Guardar();
 
         TransicionEscena.CargarEscena(SceneManager.GetActiveScene().name);
     }

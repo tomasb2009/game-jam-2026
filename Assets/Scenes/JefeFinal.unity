@@ -3676,6 +3676,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 483836482450949649, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
+      propertyPath: m_Color.b
+      value: 0.55
+      objectReference: {fileID: 0}
+    - target: {fileID: 483836482450949649, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
+      propertyPath: m_Color.g
+      value: 0.55
+      objectReference: {fileID: 0}
+    - target: {fileID: 483836482450949649, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
+      propertyPath: m_Color.r
+      value: 0.82
+      objectReference: {fileID: 0}
     - target: {fileID: 540031763699347641, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
       propertyPath: m_Name
       value: JefeFinal
@@ -3690,11 +3702,15 @@ PrefabInstance:
       objectReference: {fileID: 1253560067}
     - target: {fileID: 5280721924438399131, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
       propertyPath: rangoAtaque
-      value: 1.6
+      value: 1.9
       objectReference: {fileID: 0}
     - target: {fileID: 5280721924438399131, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
       propertyPath: cooldownAtaque
       value: 2.9
+      objectReference: {fileID: 0}
+    - target: {fileID: 5280721924438399131, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
+      propertyPath: radioDeteccion
+      value: 14
       objectReference: {fileID: 0}
     - target: {fileID: 5280721924438399131, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
       propertyPath: fuerzaRetroceso
@@ -3703,6 +3719,14 @@ PrefabInstance:
     - target: {fileID: 5280721924438399131, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
       propertyPath: tiempoInvulnerable
       value: 0.55
+      objectReference: {fileID: 0}
+    - target: {fileID: 7890320449089468717, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 7890320449089468717, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.8
       objectReference: {fileID: 0}
     - target: {fileID: 7890320449089468717, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
       propertyPath: m_LocalPosition.x

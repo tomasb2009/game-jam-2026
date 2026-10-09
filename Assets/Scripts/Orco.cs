@@ -40,6 +40,12 @@ public class Orco : MonoBehaviour
     [SerializeField] private float tiempoHastaDestruir = 1.2f;
     [SerializeField] private float cooldownAtaque = 2f;
 
+    [Header("Patrulla y percepcion")]
+    [SerializeField] private float radioDeteccion = 7f;    // ve al jugador desde esta distancia
+    [SerializeField] private float radioPierde = 12f;      // lo deja de perseguir mas alla
+    [SerializeField] private float radioPatrulla = 4f;     // zona por la que patrulla
+    [SerializeField] private float pausaPatrulla = 1.5f;   // cada cuanto elige un punto nuevo
+
     private int indiceRuta;
     private NavMeshAgent agente;
     private bool objetivoDetectado;
@@ -50,6 +56,11 @@ public class Orco : MonoBehaviour
     private AtaqueOrco ataqueOrco;
 
     private MaterialPropertyBlock mpb;
+    private Vector2 origenPatrulla;
+    private Vector2 puntoPatrulla;
+    private float proximoPuntoPatrulla;
+    private Vector2 ultimoDestino;
+    private float escalaBase = 1f;
     private bool estaMuerto;
     private bool recibiendoDaño;
     private bool enRetroceso;
@@ -70,6 +81,12 @@ public class Orco : MonoBehaviour
         if (puntosRuta == null) puntosRuta = new Transform[0];
 
         VidaInicial = vidaOrco;
+
+        origenPatrulla = transform.position;
+        puntoPatrulla = origenPatrulla;
+        escalaBase = Mathf.Abs(transform.localScale.x);
+        if (escalaBase <= 0.01f) escalaBase = 1f;
+
         BuscarJugador();
     }
 
@@ -143,7 +160,10 @@ public class Orco : MonoBehaviour
             }
         }
 
-        if(distancia > 3)objetivoDetectado = true;
+        // Percepcion real: lo ve al entrar en el radio y lo pierde si se aleja demasiado
+        // (antes bastaba con estar a mas de 3 unidades una sola vez para perseguirlo siempre)
+        if (!objetivoDetectado && distancia <= radioDeteccion) objetivoDetectado = true;
+        else if (objetivoDetectado && distancia > radioPierde) objetivoDetectado = false;
 
         if (distancia <= rangoAtaque && puedeAtacar && !recibiendoDaño)
         {
@@ -175,51 +195,66 @@ public class Orco : MonoBehaviour
         return agente != null && agente.enabled && agente.isOnNavMesh;
     }
 
+    // Punto por el que patrulla cuando no ve al jugador: deambula alrededor de donde arranco
+    private Vector2 PuntoDePatrulla()
+    {
+        if (Time.time >= proximoPuntoPatrulla)
+        {
+            proximoPuntoPatrulla = Time.time + pausaPatrulla;
+            puntoPatrulla = origenPatrulla + Random.insideUnitCircle * radioPatrulla;
+        }
+
+        return puntoPatrulla;
+    }
+
     void MovimientoOrco(bool esDetectado)
     {
+        Vector2 destino;
+
+        if (esDetectado && personaje != null) destino = personaje.position;
+        else if (TieneRuta()) destino = PosicionRutaActual();
+        else destino = PuntoDePatrulla();
+
+        ultimoDestino = destino;
+
         if (!AgentePuedeMoverse())
         {
-            if (esDetectado && personaje != null)
-            {
-                Vector2 direccion = ((Vector2)personaje.position - (Vector2)transform.position).normalized;
+            // Escena sin NavMesh: se mueve a mano, tambien al patrullar
+            Vector2 hacia = destino - (Vector2)transform.position;
 
+            if (hacia.sqrMagnitude > 0.09f)
+            {
                 float velocidad = agente != null ? agente.speed : 3f;
                 if (velocidad <= 0.01f) velocidad = 3f;
 
-                transform.position += (Vector3)(direccion * velocidad * Time.deltaTime);
-                objetivo = personaje;
+                transform.position += (Vector3)(hacia.normalized * velocidad * Time.deltaTime);
             }
 
+            objetivo = esDetectado ? personaje : null;
             return;
         }
 
-        if (esDetectado)
-        {
-            agente.isStopped = false;   // por si quedo detenido tras un retroceso
-            agente.SetDestination(personaje.position);
-            objetivo = personaje;
-        }
-        else if (TieneRuta())
-        {
-            agente.isStopped = false;
-            agente.SetDestination(PosicionRutaActual());
-            objetivo = puntosRuta[indiceRuta];
-        }
-        else
-        {
-            agente.isStopped = true;   // sin ruta asignada, se queda quieto
-            objetivo = personaje;
-        }
+        agente.isStopped = false;   // por si quedo detenido tras un retroceso
+        agente.SetDestination(destino);
+
+        if (esDetectado) objetivo = personaje;
+        else if (TieneRuta()) objetivo = puntosRuta[indiceRuta];
+        else objetivo = null;
     }
 
     void RotarOrco()
     {
-        if (objetivo == null) return;
+        float referenciaX;
 
-        if (transform.position.x > objetivo.position.x)
-            transform.localScale = new Vector2(-1, 1);
-        else
-            transform.localScale = new Vector2(1, 1);
+        if (objetivo != null) referenciaX = objetivo.position.x;
+        else if (Mathf.Abs(ultimoDestino.x - transform.position.x) > 0.05f) referenciaX = ultimoDestino.x;
+        else return;
+
+        // Se conserva el tamano (el jefe final esta agrandado a proposito)
+        float tamano = escalaBase <= 0.01f ? 1f : escalaBase;
+
+        if (transform.position.x > referenciaX) transform.localScale = new Vector3(-tamano, tamano, 1f);
+        else transform.localScale = new Vector3(tamano, tamano, 1f);
     }
 
     IEnumerator CooldownAtaque()

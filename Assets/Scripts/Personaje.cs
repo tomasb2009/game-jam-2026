@@ -323,6 +323,9 @@ public class Personaje : MonoBehaviour
             vidaPersonaje--;
             DatosJugador.vida = vidaPersonaje;
 
+            // Animacion de recibir dano (clip HereoDano, arte PJ-S1-Damage)
+            if (anim != null) anim.SetTrigger("Dano");
+
             if (uiManager != null) uiManager.RestaCorazones(vidaPersonaje);
 
             if (vidaPersonaje == 0)

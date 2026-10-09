@@ -24,7 +24,7 @@ public static class PruebaRuntime
     private static readonly (string escena, float segundos, string nota)[] Pasos =
     {
         ("MenuPrincipal", 3f, "menu principal: musica, boton Continuar, UIManager"),
-        ("SampleScene",   14f, "pueblo: jugador, monedas, bruja invocando orcos (el bug B1)"),
+        ("SampleScene",   16f, "pueblo: jugador, goblins patrullando y percibiendo al jugador"),
         ("SampleScene2",  12f, "cavernas: brujas, murcielagos, portal al jefe"),
         ("JefeFinal",     14f, "jefe: fases, embestidas, invocacion de esbirros, barra de vida"),
     };
@@ -33,6 +33,10 @@ public static class PruebaRuntime
     private static double inicioPaso;
     private static bool capturando;
     private static bool menuRevisado;
+    private static bool patrullaTomada;
+    private static int fasePueblo;
+    private static Vector2[] posicionesGoblins;
+    private static Transform[] goblinsPrevios;
     private static bool conteoHecho;
     private static bool golpesDados;
     private static int golpesLanzados;
@@ -212,6 +216,80 @@ public static class PruebaRuntime
             return;
         }
 
+        // Pueblo: la patrulla se mide con el jugador LEJOS (si no, ya lo detectan y se
+        // quedan pegados atacandolo). Despues se acerca al jugador para ver la percepcion.
+        if (Pasos[paso].escena == "SampleScene")
+        {
+            if (fasePueblo == 0 && ahora - inicioPaso >= 1.0)
+            {
+                fasePueblo = 1;
+
+                Personaje jugador = UnityEngine.Object.FindAnyObjectByType<Personaje>();
+                Orco[] enemigos = UnityEngine.Object.FindObjectsByType<Orco>(FindObjectsSortMode.None);
+
+                Vector2 centro = Vector2.zero;
+                int contados = 0;
+
+                foreach (Orco o in enemigos)
+                {
+                    if (o == null || o.GetComponent<JefeFinal>() != null) continue;
+                    centro += (Vector2)o.transform.position;
+                    contados++;
+                }
+
+                if (contados > 0) centro /= contados;
+
+                if (jugador != null) jugador.transform.position = centro + new Vector2(0f, 30f);
+
+                TomarPosicionesDeGoblins();
+                Debug.Log("[Prueba] jugador alejado 30 unidades: midiendo patrulla de " + goblinsPrevios.Length + " goblins");
+                return;
+            }
+
+            if (fasePueblo == 1 && ahora - inicioPaso >= 11.0)
+            {
+                fasePueblo = 2;
+
+                Debug.Log("[Prueba] goblin que mas patrullo en 10 s sin ver al jugador: "
+                    + MayorRecorridoDeGoblins().ToString("0.00") + " unidades");
+
+                // Ahora se acerca al jugador a un goblin para probar la percepcion
+                Personaje jugador = UnityEngine.Object.FindAnyObjectByType<Personaje>();
+                Orco[] enemigos = UnityEngine.Object.FindObjectsByType<Orco>(FindObjectsSortMode.None);
+
+                foreach (Orco o in enemigos)
+                {
+                    if (o == null || o.GetComponent<JefeFinal>() != null) continue;
+
+                    if (jugador != null) jugador.transform.position = o.transform.position + new Vector3(6f, 0f, 0f);
+                    break;
+                }
+
+                return;
+            }
+
+            if (fasePueblo == 2 && ahora - inicioPaso >= 15.0)
+            {
+                fasePueblo = 3;
+
+                Personaje jugador = UnityEngine.Object.FindAnyObjectByType<Personaje>();
+                Orco[] enemigos = UnityEngine.Object.FindObjectsByType<Orco>(FindObjectsSortMode.None);
+                int cerca = 0;
+                int total = 0;
+
+                foreach (Orco o in enemigos)
+                {
+                    if (o == null || o.GetComponent<JefeFinal>() != null) continue;
+                    total++;
+
+                    if (jugador != null && Vector2.Distance(o.transform.position, jugador.transform.position) < 4f) cerca++;
+                }
+
+                Debug.Log("[Prueba] percepcion: " + cerca + " de " + total + " goblins se acercaron al jugador en 4 s");
+                return;
+            }
+        }
+
         // Cavernas: mido que las brujas se muevan, que disparen y cuantos enemigos hay
         if (Pasos[paso].escena == "SampleScene2")
         {
@@ -384,6 +462,47 @@ public static class PruebaRuntime
         return mejor;
     }
 
+    private static void TomarPosicionesDeGoblins()
+    {
+        Orco[] enemigos = UnityEngine.Object.FindObjectsByType<Orco>(FindObjectsSortMode.None);
+        System.Collections.Generic.List<Transform> elegidos = new System.Collections.Generic.List<Transform>();
+        System.Collections.Generic.List<Vector2> posiciones = new System.Collections.Generic.List<Vector2>();
+
+        foreach (Orco o in enemigos)
+        {
+            // Solo los del pueblo (los que no son el jefe)
+            if (o.GetComponent<JefeFinal>() != null) continue;
+
+            elegidos.Add(o.transform);
+            posiciones.Add(o.transform.position);
+        }
+
+        goblinsPrevios = elegidos.ToArray();
+        posicionesGoblins = posiciones.ToArray();
+    }
+
+    private static float MayorRecorridoDeGoblins()
+    {
+        Orco[] enemigos = UnityEngine.Object.FindObjectsByType<Orco>(FindObjectsSortMode.None);
+        float maximo = 0f;
+
+        foreach (Orco o in enemigos)
+        {
+            if (o == null || o.GetComponent<JefeFinal>() != null) continue;
+
+            for (int j = 0; j < goblinsPrevios.Length; j++)
+            {
+                if (!ReferenceEquals(o.transform, goblinsPrevios[j])) continue;
+
+                float d = Vector2.Distance(o.transform.position, posicionesGoblins[j]);
+                if (d > maximo) maximo = d;
+                break;
+            }
+        }
+
+        return maximo;
+    }
+
     private static void TomarPosicionesDeBrujas()
     {
         Bruja[] brujas = UnityEngine.Object.FindObjectsByType<Bruja>(FindObjectsSortMode.None);
@@ -425,6 +544,21 @@ public static class PruebaRuntime
         GameObject[] enemigos = GameObject.FindGameObjectsWithTag("Orco");
         Debug.Log("[Prueba] enemigos 'Orco' vivos en la escena del jefe: " + enemigos.Length
             + " (los 4 que invoca cada Bruja del pueblo probaron el camino que antes tiraba NullReferenceException)");
+
+        Orco jefeEscena = null;
+        foreach (Orco o in UnityEngine.Object.FindObjectsByType<Orco>(FindObjectsSortMode.None))
+        {
+            if (o.GetComponent<JefeFinal>() != null) { jefeEscena = o; break; }
+        }
+
+        if (jefeEscena != null)
+        {
+            SpriteRenderer sr = jefeEscena.GetComponentInChildren<SpriteRenderer>(true);
+            Debug.Log("[Prueba] jefe: escala=" + jefeEscena.transform.localScale.x.ToString("0.00")
+                + " color=" + (sr != null ? sr.color.ToString() : "sin sprite")
+                + " vida=" + jefeEscena.VidaInicial);
+        }
+        else Debug.LogWarning("[Prueba] no encontre al jefe en la escena");
 
         GameObject barra = GameObject.Find("BarraJefe");
         Debug.Log("[Prueba] barra de vida del jefe existe: " + (barra != null)

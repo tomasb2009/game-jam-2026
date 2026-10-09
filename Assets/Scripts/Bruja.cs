@@ -191,13 +191,23 @@ public class Bruja : MonoBehaviour
             sprite.SetPropertyBlock(mpb);
         }
 
+        float escalaOriginal = Mathf.Abs(transform.localScale.x);
+        if (escalaOriginal <= 0.01f) escalaOriginal = 1f;
+
         float t = 0f;
         while (t < duracionRetroceso)
         {
             transform.position += (Vector3)direccion * fuerzaRetroceso * Time.deltaTime;
             t += Time.deltaTime;
+
+            // Achique: se nota que la golpearon, sin necesitar arte nuevo
+            float golpe = 1f - 0.25f * Mathf.Sin(Mathf.Clamp01(t / duracionRetroceso) * Mathf.PI);
+            transform.localScale = new Vector3(escalaOriginal * golpe, escalaOriginal * (2f - golpe), 1f);
+
             yield return null;
         }
+
+        transform.localScale = new Vector3(escalaOriginal, escalaOriginal, 1f);
 
         yield return new WaitForSeconds(duracionFlash);
 

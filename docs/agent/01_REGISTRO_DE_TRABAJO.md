@@ -446,3 +446,74 @@ entrar a cada zona (quedó como opción tuya).
 | Integridad | 5 escenas, 0 problemas |
 | Ejecución | Menú con botón activo y texto visible; bruja eliminable; 4 niveles sin excepciones |
 | Build de Windows | `Build: Succeeded errores=0` |
+
+---
+
+## Iteración 9 — 2026-10-08 23:45 (guardado fuera, diseño del menú, patrulla, jefe y daño)
+
+### 1. Se elimina el guardado
+
+- Fuera el botón **"Continuar"** y toda la API de `PlayerPrefs` de `DatosJugador`, el autoguardado del
+  `Portal` y las llamadas de `MenuPausa`/`JefeFinal`/`FinDeJuego`. El juego **no guarda partida**:
+  los datos (monedas, vida, inventario, nivel) solo viven mientras el juego está abierto, para pasar
+  de un nivel a otro. `Jugar()` arranca siempre desde el pueblo.
+
+### 2. Diseño y paleta del menú
+
+Paleta «noche cálida de montaña con ámbar de antorcha» (aplicada al menú y a la pausa):
+
+| Uso | Color |
+|---|---|
+| Fondo | `#14100C` |
+| Panel / botón | `#211B15` |
+| Ámbar (título y bordes) | `#D9A24B` |
+| Texto claro | `#F2E7D5` |
+| Texto apagado | `#B9A98C` |
+| Vida / jefe | `#B8301E` |
+
+- Título **THE WARRIOR PATH** con subtítulo "El camino del guerrero", botones **EMPEZAR** y **SALIR**
+  (este último ahora usa el `Salir()` que existía sin botón), con borde ámbar y la fuente del juego.
+- Maqueta para aprobar: `docs/agent/mockup_menu.html`.
+- Medición en ejecución: **4 textos activos con fuente usable** (antes el menú era una pantalla vacía).
+
+### 3. Zona 1: los goblins patrullan y perciben al jugador
+
+- `Orco` ahora tiene **percepción real**: detecta al jugador dentro de `radioDeteccion` (7) y lo pierde
+  si se aleja más de `radioPierde` (12). Antes bastaba con haber estado a más de 3 unidades una sola vez
+  para perseguirlo durante toda la partida.
+- Si no lo ve, **patrulla** deambulando alrededor de donde arrancó (`radioPatrulla` 4, elige punto nuevo
+  cada 1,5 s).
+- Medido en ejecución: con el jugador a 30 unidades, un goblin **recorrió 8,36 unidades en 10 s**
+  patrullando; al acercar al jugador, **2 de 6** se le aproximaron en 4 s (los que entraron en su radio
+  de percepción).
+
+### 4. Jefe final: más grande, con identidad y barra clara
+
+- **Escala 1,8** (se cambió `RotarOrco` para no pisar el tamaño al girar), **color propio** (rojizo,
+  se distingue de un goblin común), 24 de vida, detecta desde 14 y golpea a 1,9.
+- Barra de vida más grande (1100x62) con **nombre "EL TIRANO"**, **números de vida (por ejemplo 15 / 24)**
+  y **destello del relleno cada vez que recibe un golpe**.
+- Medido en ejecución: `jefe: escala=-1,80 color=RGBA(0.820,0.550,0.550) vida=24` y `barra existe: True`.
+
+### 5. Animación de daño
+
+- **Jugador**: se creó el clip `Assets/Animaciones/HereoDano.anim` con los 3 cuadros de
+  `PJ-S1-Damage.png` y se agregó el parámetro `Dano` + estado `HereoDano` al controlador, con transición
+  desde cualquier estado. `Personaje.CausarHerida()` dispara el trigger.
+  *(Implementado y verificado en el controlador; que se vea bien en pantalla no lo puedo comprobar yo.)*
+- **Brujas**: al recibir un golpe se achican y estiran (efecto de squash) además del flash, sin necesitar
+  arte nuevo (no hay hoja de daño para la bruja).
+
+### 6. Victoria y derrota
+
+Ya funcionaban: la victoria ofrece "Ver el final" (va a la cinemática) y la derrota ofrece reintentar o
+volver al menú. Verificado otra vez en esta corrida: al morir el jugador aparece `PanelFinal` ✓.
+
+### Balance medido tras bajarle el ritmo al jefe
+
+Quieto y sin esquivar, con 5 corazones, el jefe tarda **9 s** en matarte (antes 2,3–5 s).
+
+### Estado del repositorio
+
+12 commits locales; última tanda verificada con 0 errores de compilación, 5 escenas sin problemas,
+recorrido completo sin excepciones y `Build: Succeeded errores=0`.

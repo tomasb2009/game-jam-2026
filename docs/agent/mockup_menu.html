@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>THE WARRIOR PATH — propuesta de menú</title>
+<style>
+  :root{
+    --fondo:#14100C; --panel:#211B15; --ambar:#D9A24B; --texto:#F2E7D5;
+    --apagado:#B9A98C; --vida:#B8301E; --borde:rgba(217,162,75,.55);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0b0908;color:var(--texto);font-family:"Segoe UI",system-ui,sans-serif;padding:18px}
+  .marco{max-width:900px;margin:0 auto}
+  .pantalla{
+    position:relative;aspect-ratio:16/9;width:100%;background:
+      radial-gradient(120% 90% at 50% 10%, #2a2118 0%, var(--fondo) 55%, #0a0705 100%);
+    border:1px solid #2b231b;border-radius:10px;overflow:hidden;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  }
+  .pantalla::after{ /* silueta de montaña, como el arte del juego */
+    content:"";position:absolute;left:0;right:0;bottom:0;height:34%;
+    background:linear-gradient(180deg,transparent,rgba(0,0,0,.65)),
+      conic-gradient(from 200deg at 30% 100%, #1a1410 0 25%, transparent 0 100%),
+      conic-gradient(from 230deg at 70% 100%, #16110d 0 22%, transparent 0 100%);
+    pointer-events:none;
+  }
+  h1{font-size:44px;letter-spacing:.14em;color:var(--ambar);font-weight:800;text-shadow:0 3px 0 #000,0 0 26px rgba(217,162,75,.35)}
+  .sub{color:var(--apagado);font-size:16px;letter-spacing:.22em;text-transform:uppercase}
+  .botones{display:flex;flex-direction:column;gap:14px;margin-top:10px;z-index:2}
+  .btn{
+    width:300px;padding:16px 0;text-align:center;border-radius:8px;
+    background:var(--panel);border:2px solid var(--borde);color:var(--texto);
+    font-size:22px;letter-spacing:.16em;cursor:pointer;transition:.15s;
+  }
+  .btn:hover{background:#2e251c;border-color:var(--ambar);transform:translateY(-1px)}
+  .barra-jefe{position:absolute;top:16px;left:50%;transform:translateX(-50%);width:74%;z-index:2}
+  .nombre{font-size:13px;color:var(--texto);text-align:center;letter-spacing:.2em;margin-bottom:5px}
+  .barra{height:20px;background:rgba(0,0,0,.62);border:2px solid #3a2d20;border-radius:5px;padding:2px}
+  .relleno{height:100%;width:62%;background:var(--vida);border-radius:3px;box-shadow:0 0 12px rgba(184,48,30,.6)}
+  .vida{font-size:13px;text-align:center;margin-top:4px;color:#fff}
+  .paleta{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin:18px 0 6px}
+  .swatch{border-radius:8px;overflow:hidden;border:1px solid #2b231b}
+  .swatch .color{height:56px}
+  .swatch .dato{padding:7px 9px;background:#171310;font-size:11px;line-height:1.5}
+  .dato b{display:block;font-size:12px;color:var(--texto)}
+  .nota{color:var(--apagado);font-size:13px;line-height:1.65;border-left:2px solid var(--borde);padding-left:12px;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="marco">
+  <div class="pantalla">
+    <div class="barra-jefe">
+      <div class="nombre">EL TIRANO</div>
+      <div class="barra"><div class="relleno"></div></div>
+      <div class="vida">15 / 24</div>
+    </div>
+    <h1>THE WARRIOR PATH</h1>
+    <div class="sub">El camino del guerrero</div>
+    <div class="botones">
+      <div class="btn">EMPEZAR</div>
+      <div class="btn">SALIR</div>
+    </div>
+  </div>
+
+  <div class="paleta">
+    <div class="swatch"><div class="color" style="background:#14100C"></div><div class="dato"><b>Fondo</b>#14100C</div></div>
+    <div class="swatch"><div class="color" style="background:#211B15"></div><div class="dato"><b>Panel / botón</b>#211B15</div></div>
+    <div class="swatch"><div class="color" style="background:#D9A24B"></div><div class="dato"><b>Ámbar (título)</b>#D9A24B</div></div>
+    <div class="swatch"><div class="color" style="background:#F2E7D5"></div><div class="dato"><b>Texto claro</b>#F2E7D5</div></div>
+    <div class="swatch"><div class="color" style="background:#B9A98C"></div><div class="dato"><b>Texto apagado</b>#B9A98C</div></div>
+    <div class="swatch"><div class="color" style="background:#B8301E"></div><div class="dato"><b>Vida / jefe</b>#B8301E</div></div>
+  </div>
+
+  <p class="nota">
+    Esto ya está aplicado en el juego: menú con título propio y botones EMPEZAR / SALIR, y arriba la barra del jefe
+    con su vida total (por ejemplo 15 / 24) y un destello cada vez que le pegás.<br>
+    Si querés otra dirección (más claro, más rojo, tipografía distinta), decime y lo cambio — la paleta está
+    en un solo lugar del código, así que cambiarla es rápido.
+  </p>
+</div>
+</body>
+</html>

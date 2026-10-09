@@ -37,7 +37,6 @@ public static class ConstruirContenidoFinal
     {
         CrearEscenaJefe();
         PonerPortalHaciaElJefe();
-        AgregarBotonContinuar();
         AgregarCierreDeCinematica();
         OrdenarBuildSettings();
 
@@ -204,74 +203,6 @@ public static class ConstruirContenidoFinal
 
     // ---------------------------------------------------------------- boton Continuar
 
-    private static void AgregarBotonContinuar()
-    {
-        Scene escena = EditorSceneManager.OpenScene(EscenaMenu, OpenSceneMode.Single);
-
-        MenuPrincipal gestor = BuscarComponente<MenuPrincipal>(escena);
-        if (gestor == null)
-        {
-            Debug.LogWarning("[WarriorPath] No se encontro MenuPrincipal en " + EscenaMenu);
-            return;
-        }
-
-        bool yaExiste = BuscarPorNombre(escena, "BotonContinuar") != null;
-
-        if (yaExiste)
-        {
-            Debug.Log("[WarriorPath] El boton Continuar ya existe.");
-            return;
-        }
-
-        Button botonReferencia = null;
-        foreach (GameObject raiz in escena.GetRootGameObjects())
-        {
-            foreach (Button b in raiz.GetComponentsInChildren<Button>(true))
-            {
-                if (b.gameObject.activeInHierarchy)
-                {
-                    botonReferencia = b;
-                    break;
-                }
-            }
-        }
-
-        if (botonReferencia == null)
-        {
-            Debug.LogWarning("[WarriorPath] No hay ningun boton en el menu para clonar.");
-            return;
-        }
-
-        GameObject clon = Object.Instantiate(botonReferencia.gameObject, botonReferencia.transform.parent);
-        clon.name = "BotonContinuar";
-
-        RectTransform rt = clon.GetComponent<RectTransform>();
-        if (rt != null) rt.anchoredPosition = rt.anchoredPosition + new Vector2(0f, -90f);
-
-        TMP_Text etiqueta = clon.GetComponentInChildren<TMP_Text>(true);
-        if (etiqueta != null) etiqueta.text = "Continuar";
-
-        Button boton = clon.GetComponent<Button>();
-        boton.onClick.RemoveAllListeners();
-        UnityEventTools.AddPersistentListener(boton.onClick, new UnityAction(gestor.Continuar));
-
-        SerializedObject so = new SerializedObject(gestor);
-        SerializedProperty campo = so.FindProperty("botonContinuar");
-        if (campo != null)
-        {
-            campo.objectReferenceValue = clon;
-            so.ApplyModifiedPropertiesWithoutUndo();
-        }
-        else
-        {
-            Debug.LogWarning("[WarriorPath] MenuPrincipal no tiene el campo botonContinuar.");
-        }
-
-        EditorSceneManager.MarkSceneDirty(escena);
-        EditorSceneManager.SaveScene(escena);
-
-        Debug.Log("[WarriorPath] Boton Continuar agregado al menu principal.");
-    }
 
     // ---------------------------------------------------------------- cierre de la cinematica
 

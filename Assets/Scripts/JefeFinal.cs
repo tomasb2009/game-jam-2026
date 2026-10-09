@@ -122,7 +122,6 @@ public class JefeFinal : MonoBehaviour
 
         FinDeJuego.Instancia.OcultarBarraJefe();
         DatosJugador.vida = DatosJugador.VIDA_MAXIMA;
-        DatosJugador.Guardar();
 
         StartCoroutine(VictoriaConRetraso());
     }
