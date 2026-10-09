@@ -255,3 +255,69 @@ caso real que antes quedaba sin salida.
 - **Jugarlo con manos humanas** (sensación de control, dificultad, música) y diseñar la arena del jefe
   como arena real, no como el nivel de cavernas limpio.
 - El `push` sigue bloqueado por permisos (403).
+
+---
+
+## Iteración 6 — 2026-10-08 22:27 (ajustes de diseño pedidos por el dueño del producto)
+
+Pedidos y cómo quedaron, con la medición que lo respalda.
+
+### 1. Zona 1 (pueblo): sin bruja, solo los goblins colocados a mano
+
+- Se **eliminó el GameObject `Bruja`** de `SampleScene` (estaba desactivado, pero con su `BrujaSpawner`
+  listo para invocar). Quedan los 6 goblins colocados a mano.
+- Log del script: `Zona 1: bruja(s) quitadas = 1`.
+
+### 2. Zona 2 (cavernas): menos invocaciones, con tope
+
+- `BrujaSpawner` ahora tiene `esbirrosPorInvocacion` (1) y un **tope de vivos** (`maximoVivos` = 6),
+  con una cuenta compartida entre brujas que se descuenta cuando muere un esbirro (componente `Esbirro`).
+- Las 4 brujas quedaron en 1 esbirro cada 5 s, tope 6.
+- Medido en ejecución: **5 enemigos vivos contra los 17 de antes**.
+
+### 3. La bruja se mueve y tiene su propio ataque
+
+- Nuevo `Bruja.cs`: huye del jugador cuando se le acerca (y lo espera si está lejos), esquiva paredes
+  con un chequeo de colisión lateral, y le lanza un proyectil propio.
+- Nuevo `ProyectilBruja.cs` + prefab `Assets/Prefabs/ProyectilBruja.prefab` (creado desde `Flecha.prefab`;
+  `Flecha.cs` no servía porque solo lastima a los de tag `Orco`).
+  El Animator de la bruja ya tenía `BrujaCamina` como estado por defecto, así que camina sola al moverse.
+- Medido en ejecución: al acercarle el jugador a 2 unidades, la bruja **recorrió 4,16 unidades** y
+  terminó **a 9,86 unidades** (mantiene distancia), se **vio un proyectil suyo en vuelo** y el jugador
+  **perdió 2 corazones** a su lado. Y ningún error en el log.
+
+### 4. Interfaces de pausa y tienda (ajuste concreto, sin rediseño)
+
+- Se borró el **texto de prueba** que había quedado en la escena (`dasdasdasdasddsadasdasd`, en el objeto
+  `Content`) en las tres escenas de juego.
+- Etiquetas de la tienda coherentes: `Pocion Salud Pequeña $1`, `Pocion Salud Mediana $2`,
+  `Pocion Velocidad $5` (solo caracteres que la fuente bitmap ya dibujaba).
+- `UIManager`: nuevo campo `textoAviso` (creado en `PanelTienda`) con mensajes al comprar,
+  al no llegar las monedas ("No tenes monedas suficientes") y con el inventario lleno.
+- `MenuPausa.ReiniciarNivel()` + botón **"Reiniciar nivel"** clonado del de Reanudar y cableado
+  (reinicia el nivel conservando monedas, inventario y el último nivel guardado).
+
+### 5. La tienda no se abre sola al cambiar de escena
+
+- `Tendero`: ignora cualquier choque durante los primeros 1,5 s de la escena (el jugador puede aparecer
+  pegado al tendero) y solo abre con el jugador.
+- `UIManager.Start()` fuerza `Time.timeScale = 1`, para que ninguna escena herede el tiempo congelado.
+- Evidencia indirecta de que funciona: en la corrida de prueba anterior el tiempo llegaba congelado a la
+  arena (`timeScale = 0`), y en la última llega en `1`.
+
+### Verificación de esta iteración
+
+| Prueba | Resultado |
+|---|---|
+| Compilación | 0 errores |
+| Ajustes aplicados | Proyectil creado; Zona 1: 1 bruja quitada; Zona 2: 4 brujas ajustadas; en cada escena 1 texto de prueba limpiado, 3 etiquetas y botón reiniciar |
+| Integridad de escenas | 5 escenas, 0 scripts faltantes, 0 problemas |
+| Ejecución (Play mode, 4 niveles) | Sin una sola excepción; 5 enemigos vivos; bruja huyendo y disparando; derrota funcionando |
+| Build de Windows | `Build: Succeeded errores=0` |
+
+### Pendiente
+
+- Jugarlo con manos humanas: cuánto molesta que la bruja huya, si el tope de 6 es el correcto y si el
+  proyectil se siente justo.
+- La arena del jefe sigue siendo la geometría de las cavernas limpia.
+- El `push` sigue bloqueado por permisos (403).

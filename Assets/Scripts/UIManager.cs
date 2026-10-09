@@ -16,6 +16,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TMP_Text textoDialogo;
     [SerializeField] private GameObject panelEquipo;
     [SerializeField] private GameObject tienda;
+    [SerializeField] private TMP_Text textoAviso;   // mensajes de la tienda ("no alcanzan las monedas", etc.)
 
     private void OnEnable()
     {
@@ -30,6 +31,9 @@ public class UIManager : MonoBehaviour
     private void Start()
     {
         // Restaura monedas e inventario guardados al cambiar de escena
+        // Ninguna escena debe arrancar con el tiempo congelado por la anterior
+        Time.timeScale = 1f;
+
         totalMoendas = DatosJugador.monedas;
 
         // La escena de menu tiene un UIManager sin campos asignados: sin estos
@@ -109,27 +113,55 @@ public class UIManager : MonoBehaviour
     {
         PrecioObjeto(objeto);
 
-        if (precioObjeto <= totalMoendas && TotalObjetos < 3)
+        if (TotalObjetos >= 3)
         {
-            GameObject equipo = Resources.Load<GameObject>(objeto);
-            if (equipo == null) return; // el prefab del objeto no existe: no se cobra nada
+            Avisar("Inventario lleno (maximo 3 objetos)");
+            return;
+        }
 
-            TotalObjetos++;
-            totalMoendas -= precioObjeto;
-            DatosJugador.monedas = totalMoendas;
-            DatosJugador.inventario.Add(objeto);
-            if (textoMonedas != null) textoMonedas.text = totalMoendas.ToString();
+        if (precioObjeto > totalMoendas)
+        {
+            Avisar("No tenes monedas suficientes");
+            return;
+        }
 
-            if (panelEquipo != null)
-            {
-                Instantiate(equipo, Vector3.zero, Quaternion.identity, panelEquipo.transform);
-            }
+        GameObject equipo = Resources.Load<GameObject>(objeto);
+        if (equipo == null) return; // el prefab del objeto no existe: no se cobra nada
+
+        TotalObjetos++;
+        totalMoendas -= precioObjeto;
+        DatosJugador.monedas = totalMoendas;
+        DatosJugador.inventario.Add(objeto);
+        if (textoMonedas != null) textoMonedas.text = totalMoendas.ToString();
+
+        if (panelEquipo != null)
+        {
+            Instantiate(equipo, Vector3.zero, Quaternion.identity, panelEquipo.transform);
+        }
+
+        Avisar("Compraste " + NombreDelObjeto(objeto));
+    }
+
+    private void Avisar(string mensaje)
+    {
+        if (textoAviso != null) textoAviso.text = mensaje;
+    }
+
+    private string NombreDelObjeto(string objeto)
+    {
+        switch (objeto)
+        {
+            case "BotonPocionPeque": return "pocion de salud pequena ($1)";
+            case "BotonPocionMed": return "pocion de salud mediana ($2)";
+            case "BotonPocionVel": return "pocion de velocidad ($5)";
+            default: return objeto;
         }
     }
 
     public void CerrarTienda()
     {
         if (tienda != null) tienda.SetActive(false);
+        Avisar("");
         Time.timeScale = 1f;
     }
 

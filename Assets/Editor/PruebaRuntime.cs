@@ -33,6 +33,13 @@ public static class PruebaRuntime
     private static double inicioPaso;
     private static bool capturando;
     private static bool conteoHecho;
+    private static bool posicionesTomadas;
+    private static int vidaAntesDelAtaque = -1;
+    private static int proyectilesVistos;
+    private static int cuadros;
+    private static float distanciaBrujaJugador;
+    private static Transform[] brujasPrevias;
+    private static Vector2[] posicionesBrujas;
     private static bool funcionalEmpezado;
     private static bool funcionalHecho;
     private static bool muerteProvocada;
@@ -154,14 +161,64 @@ public static class PruebaRuntime
             return;
         }
 
-        // En las cavernas hay 3 brujas activas: cuento los enemigos que invocan
-        if (Pasos[paso].escena == "SampleScene2" && !conteoHecho && ahora - inicioPaso >= 9.0)
+        // Cavernas: mido que las brujas se muevan, que disparen y cuantos enemigos hay
+        if (Pasos[paso].escena == "SampleScene2")
         {
-            conteoHecho = true;
-            int vivos = GameObject.FindGameObjectsWithTag("Orco").Length;
-            Debug.Log("[Prueba] enemigos 'Orco' invocados por las brujas en las cavernas: " + vivos
-                + " (este es el camino que antes tiraba NullReferenceException todos los frames)");
-            return;
+            cuadros++;
+
+            if (cuadros % 15 == 0)
+            {
+                int enVuelo = UnityEngine.Object.FindObjectsByType<ProyectilBruja>(FindObjectsSortMode.None).Length;
+                if (enVuelo > proyectilesVistos) proyectilesVistos = enVuelo;
+
+                Bruja masCerca = BrujaMasCercana(UnityEngine.Object.FindAnyObjectByType<Personaje>());
+                if (masCerca != null)
+                {
+                    Personaje p = UnityEngine.Object.FindAnyObjectByType<Personaje>();
+                    if (p != null) distanciaBrujaJugador = Vector2.Distance(masCerca.transform.position, p.transform.position);
+                }
+            }
+
+            if (!posicionesTomadas && ahora - inicioPaso >= 2.5)
+            {
+                posicionesTomadas = true;
+                TomarPosicionesDeBrujas();
+                Debug.Log("[Prueba] brujas encontradas en las cavernas: " + (posicionesBrujas == null ? 0 : posicionesBrujas.Length));
+
+                // El test deja al jugador quieto y lejos: la bruja por diseno lo espera
+                // a mas de 8 unidades. Lo acerco para forzar huida y ataque.
+                Personaje jugador = UnityEngine.Object.FindAnyObjectByType<Personaje>();
+                Bruja brujaCerca = BrujaMasCercana(jugador);
+
+                if (jugador != null && brujaCerca != null)
+                {
+                    jugador.transform.position = brujaCerca.transform.position + new Vector3(2f, 0f, 0f);
+                    vidaAntesDelAtaque = DatosJugador.vida;
+                    Debug.Log("[Prueba] jugador puesto a 2 unidades de una bruja (vida " + vidaAntesDelAtaque + ")");
+                }
+                return;
+            }
+
+            if (!conteoHecho && ahora - inicioPaso >= 9.5)
+            {
+                conteoHecho = true;
+
+                int vivos = GameObject.FindGameObjectsWithTag("Orco").Length;
+                int proyectiles = UnityEngine.Object.FindObjectsByType<ProyectilBruja>(FindObjectsSortMode.None).Length;
+
+                float maximoRecorrido = MayorRecorridoDeBrujas();
+
+                Debug.Log("[Prueba] enemigos 'Orco' vivos en las cavernas: " + vivos
+                    + " (tope configurado: 6 invocados, 1 por bruja cada 5 s)");
+                int dañoRecibido = vidaAntesDelAtaque < 0 ? 0 : Mathf.Max(0, vidaAntesDelAtaque - DatosJugador.vida);
+
+                Debug.Log("[Prueba] bruja que mas se movio en 7 s: " + maximoRecorrido.ToString("0.00")
+                    + " unidades | vida que perdio el jugador junto a la bruja: " + dañoRecibido);
+                Debug.Log("[Prueba] proyectiles de bruja vistos en vuelo (maximo simultaneo): " + proyectilesVistos
+                    + " | distancia bruja-jugador al final: " + distanciaBrujaJugador.ToString("0.00")
+                    + " (la bruja mantiene distancia: huye)");
+                return;
+            }
         }
 
         // Pruebas funcionales dentro del nivel del jefe
@@ -200,6 +257,57 @@ public static class PruebaRuntime
     }
 
     // ------------------------- pruebas funcionales -------------------------
+
+    private static Bruja BrujaMasCercana(Personaje jugador)
+    {
+        Bruja[] brujas = UnityEngine.Object.FindObjectsByType<Bruja>(FindObjectsSortMode.None);
+        Bruja mejor = null;
+        float mejorDistancia = float.MaxValue;
+
+        for (int i = 0; i < brujas.Length; i++)
+        {
+            float distancia = jugador == null ? 0f : Vector2.Distance(brujas[i].transform.position, jugador.transform.position);
+            if (distancia < mejorDistancia) { mejorDistancia = distancia; mejor = brujas[i]; }
+        }
+
+        return mejor;
+    }
+
+    private static void TomarPosicionesDeBrujas()
+    {
+        Bruja[] brujas = UnityEngine.Object.FindObjectsByType<Bruja>(FindObjectsSortMode.None);
+
+        brujasPrevias = new Transform[brujas.Length];
+        posicionesBrujas = new Vector2[brujas.Length];
+
+        for (int i = 0; i < brujas.Length; i++)
+        {
+            brujasPrevias[i] = brujas[i].transform;
+            posicionesBrujas[i] = brujas[i].transform.position;
+        }
+    }
+
+    // Compara por identidad de objeto, no por orden: mismo bicho, distinta posicion
+    private static float MayorRecorridoDeBrujas()
+    {
+        Bruja[] brujas = UnityEngine.Object.FindObjectsByType<Bruja>(FindObjectsSortMode.None);
+        float maximo = 0f;
+
+        for (int i = 0; i < brujas.Length; i++)
+        {
+            for (int j = 0; j < brujasPrevias.Length; j++)
+            {
+                // Se compara la referencia del objeto: misma bruja, otra posicion
+                if (!ReferenceEquals(brujas[i].transform, brujasPrevias[j])) continue;
+
+                float distancia = Vector2.Distance(brujas[i].transform.position, posicionesBrujas[j]);
+                if (distancia > maximo) maximo = distancia;
+                break;
+            }
+        }
+
+        return maximo;
+    }
 
     private static void PruebasFuncionales()
     {

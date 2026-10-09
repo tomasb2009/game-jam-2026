@@ -34,6 +34,17 @@ public class MenuPausa : MonoBehaviour
         estaPausado = false;
     }
 
+    // Reinicia el nivel actual conservando monedas, inventario y ultimo nivel guardado
+    public void ReiniciarNivel()
+    {
+        Time.timeScale = 1f;
+
+        DatosJugador.vida = DatosJugador.VIDA_MAXIMA;
+        DatosJugador.Guardar();
+
+        TransicionEscena.CargarEscena(SceneManager.GetActiveScene().name);
+    }
+
     public void VolverAlMenu()
     {
         Time.timeScale = 1f;   // MUY importante, ver abajo
