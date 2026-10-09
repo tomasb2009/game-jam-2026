@@ -517,3 +517,41 @@ Quieto y sin esquivar, con 5 corazones, el jefe tarda **9 s** en matarte (antes 
 
 12 commits locales; última tanda verificada con 0 errores de compilación, 5 escenas sin problemas,
 recorrido completo sin excepciones y `Build: Succeeded errores=0`.
+
+---
+
+## Iteración 10 — 2026-10-09 (integración de recursos ONIET26 y regresión de victoria)
+
+### Hecho
+
+- Se integró el arte de jefe suministrado en `ONIET26/`: sprites de caminar/ataque y recurso `Victoria.png`.
+  Se construyó el controlador `JefeONIET26` y sus clips de caminar, ataque y muerte; el jefe de `JefeFinal`
+  lo usa con escala 2,8 y 30 puntos de vida.
+- Se añadieron cinco instancias decorativas del prefab existente `Arbol` al pueblo, sin añadir colliders
+  nuevos. Se conservó el `Tilemap_Colisiones` de los niveles y se añadió ese requisito al verificador.
+- Se aplicó la paleta cálida aprobada en menú y pausa, manteniendo el menú existente y sus botones Jugar/Salir.
+  `Jugar` parte siempre desde el pueblo; `Continuar` y referencias a `PlayerPrefs` no existen en scripts/menú.
+- Se añadió `P` para pausar/reanudar y `ESC` para salir, también en el menú.
+- Se corrigieron los paneles finales y la barra del jefe para que sean hijos del Canvas: antes estaban fuera
+  del Canvas y, aunque los objetos existían, Unity no los dibujaba.
+- **Causa raíz adicional corregida:** la corrutina de victoria vivía en el GameObject del jefe, que se
+  destruye antes de que venza la espera. Ahora la espera vive en `FinDeJuego`, persistente entre escenas.
+
+### Verificación real en Unity 6000.5.8f1
+
+- Play mode: `P` pausa y reanuda; 6 goblins usan controlador/sprite correcto y 0 usan sprite de ojo.
+- El jefe cargó `JefeONIET26`, el sprite de ONIET26, escala reportada `-2,8` (signo de orientación), vida 30;
+  barra visible durante combate y dentro del Canvas.
+- Se forzó el golpe mortal al jefe y se esperó el flujo real: `muerte real del jefe activa victoria/cinematica
+  ONIET26: True`. La imagen de victoria y la derrota aparecen ambas bajo Canvas.
+- El recorrido de los 4 niveles terminó sin excepción/error de juego.
+- Verificador: 5 escenas, 0 scripts faltantes, 0 problemas; los mapas de juego tienen el Tilemap de colisiones.
+- Build Windows: `Build: Succeeded errores=0`.
+- Comprobación estática adicional: cinco referencias a árboles en `SampleScene`; ningún `PlayerPrefs`, método
+  Continuar o botón Continuar en scripts del juego/escena del menú.
+
+### Pendiente
+
+- Probar manualmente con teclado/ratón la alineación visual en una ventana real, el sonido duplicado señalado
+  previamente y el balance de dificultad. La regresión fue Play mode automatizado, no una sesión humana.
+- No se hizo push ni publicación.

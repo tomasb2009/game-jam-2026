@@ -1837,7 +1837,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColor: {r: 0.949, g: 0.906, b: 0.835, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -1974,7 +1974,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4281479730
-  m_fontColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
+  m_fontColor: {r: 0.949, g: 0.906, b: 0.835, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -2636,7 +2636,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.129, g: 0.105, b: 0.082, a: 0.96}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2861,7 +2861,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.2528302, g: 0.2528302, b: 0.2528302, a: 0.70980394}
+  m_Color: {r: 0.078, g: 0.063, b: 0.047, a: 0.72}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -3598,7 +3598,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4280690431
-  m_fontColor: {r: 1, g: 0.1490565, b: 0.1490565, a: 1}
+  m_fontColor: {r: 0.851, g: 0.635, b: 0.294, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -3677,16 +3677,24 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 483836482450949649, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
+      propertyPath: m_Sprite
+      value:
+      objectReference: {fileID: 21300000, guid: 274998c6f5683634fbec9e8f11343d0d, type: 3}
+    - target: {fileID: 483836482450949649, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
       propertyPath: m_Color.b
-      value: 0.55
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 483836482450949649, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
       propertyPath: m_Color.g
-      value: 0.55
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 483836482450949649, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
       propertyPath: m_Color.r
-      value: 0.82
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 483836482450949649, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
+      propertyPath: m_SortingOrder
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 540031763699347641, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
       propertyPath: m_Name
@@ -3694,7 +3702,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5280721924438399131, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
       propertyPath: vidaOrco
-      value: 24
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 5280721924438399131, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
       propertyPath: personaje
@@ -3702,7 +3710,7 @@ PrefabInstance:
       objectReference: {fileID: 1253560067}
     - target: {fileID: 5280721924438399131, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
       propertyPath: rangoAtaque
-      value: 1.9
+      value: 1.8
       objectReference: {fileID: 0}
     - target: {fileID: 5280721924438399131, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
       propertyPath: cooldownAtaque
@@ -3720,13 +3728,25 @@ PrefabInstance:
       propertyPath: tiempoInvulnerable
       value: 0.55
       objectReference: {fileID: 0}
+    - target: {fileID: 5574047205639888814, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
+      propertyPath: m_Size.x
+      value: 0.9
+      objectReference: {fileID: 0}
+    - target: {fileID: 5574047205639888814, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
+      propertyPath: m_Size.y
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 6957510549437548844, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
+      propertyPath: m_Controller
+      value:
+      objectReference: {fileID: 9100000, guid: 78f16f21bb0b33b4594d161e869cfdd2, type: 2}
     - target: {fileID: 7890320449089468717, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
       propertyPath: m_LocalScale.x
-      value: 1.8
+      value: 2.8
       objectReference: {fileID: 0}
     - target: {fileID: 7890320449089468717, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
       propertyPath: m_LocalScale.y
-      value: 1.8
+      value: 2.8
       objectReference: {fileID: 0}
     - target: {fileID: 7890320449089468717, guid: b494aa5015fca3b45a88bb81718257cb, type: 3}
       propertyPath: m_LocalPosition.x
@@ -93957,7 +93977,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColor: {r: 0.949, g: 0.906, b: 0.835, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:

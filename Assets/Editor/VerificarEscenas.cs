@@ -5,6 +5,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.Tilemaps;
 
 /// <summary>
 /// Revisa la integridad de todas las escenas del build: componentes con script
@@ -70,6 +71,7 @@ public static class VerificarEscenas
 
         GameObject jugador = null;
         GameObject ui = null;
+        GameObject mapaColisiones = null;
         int portales = 0;
         int camaras = 0;
 
@@ -85,6 +87,7 @@ public static class VerificarEscenas
                 if (go.GetComponent<UIManager>() != null) ui = go;
                 if (go.GetComponent<Portal>() != null) portales++;
                 if (go.GetComponent<Camera>() != null) camaras++;
+                if (go.name == "Tilemap_Colisiones") mapaColisiones = go;
 
                 foreach (Component c in go.GetComponents<Component>())
                 {
@@ -103,7 +106,25 @@ public static class VerificarEscenas
         if (jugador != null)
         {
             if (jugador.GetComponent<Rigidbody2D>() == null) r.Problemas.Add("el jugador no tiene Rigidbody2D");
+            if (jugador.GetComponent<Collider2D>() == null) r.Problemas.Add("el jugador no tiene Collider2D: puede atravesar paredes/recibir golpes mal");
             if (jugador.GetComponentInChildren<Animator>(true) == null) r.Problemas.Add("el jugador no tiene Animator");
+        }
+
+        // Colisiones del mapa: el Tilemap de paredes debe tener su collider habilitado.
+        if (escena.name == "SampleScene" || escena.name == "SampleScene2" || escena.name == "JefeFinal")
+        {
+            if (mapaColisiones == null)
+            {
+                r.Problemas.Add("falta Tilemap_Colisiones");
+            }
+            else
+            {
+                TilemapCollider2D colisionTiles = mapaColisiones.GetComponent<TilemapCollider2D>();
+                if (colisionTiles == null || !colisionTiles.enabled)
+                    r.Problemas.Add("Tilemap_Colisiones no tiene TilemapCollider2D habilitado");
+                else if (colisionTiles.usedByComposite && mapaColisiones.GetComponent<CompositeCollider2D>() == null)
+                    r.Problemas.Add("TilemapCollider2D espera un CompositeCollider2D que no existe");
+            }
         }
 
         if (camaras == 0) r.Problemas.Add("no hay camara en la escena");

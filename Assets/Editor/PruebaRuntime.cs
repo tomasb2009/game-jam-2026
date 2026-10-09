@@ -33,6 +33,7 @@ public static class PruebaRuntime
     private static double inicioPaso;
     private static bool capturando;
     private static bool menuRevisado;
+    private static bool pausaProbada;
     private static bool patrullaTomada;
     private static int fasePueblo;
     private static Vector2[] posicionesGoblins;
@@ -51,6 +52,10 @@ public static class PruebaRuntime
     private static Transform[] brujasPrevias;
     private static Vector2[] posicionesBrujas;
     private static bool vidaArenaRegistrada;
+    private static bool bossAssetsRevisados;
+    private static bool victoriaBossEncolada;
+    private static bool victoriaBossVerificada;
+    private static double horaVictoriaBoss;
     private static float muerteEnArena = -1f;
     private static bool funcionalEmpezado;
     private static bool funcionalHecho;
@@ -195,6 +200,9 @@ public static class PruebaRuntime
                 detalle += " [" + tt.text + " glifos=" + glifos + "]";
             }
 
+            if (GameObject.Find("BotonContinuar") != null)
+                Debug.LogError("[Prueba] el boton Continuar sigue presente, pero el juego no debe guardar partida");
+
             Debug.Log("[Prueba] menu: textos activos = " + textos.Length + ", con fuente usable = " + conGlifos);
             Debug.Log("[Prueba] detalle del menu:" + detalle);
 
@@ -213,6 +221,57 @@ public static class PruebaRuntime
             {
                 Debug.Log("[Prueba] raiz del menu: " + raiz.name + " activo=" + raiz.activeInHierarchy);
             }
+            return;
+        }
+
+        // Regresion de controles: P debe pausar/reanudar; ESC se reserva para cerrar.
+        if (Pasos[paso].escena == "SampleScene" && !pausaProbada && ahora - inicioPaso >= 1.2)
+        {
+            pausaProbada = true;
+            MenuPausa menuPausa = UnityEngine.Object.FindAnyObjectByType<MenuPausa>();
+
+            if (menuPausa == null)
+            {
+                Debug.LogError("[Prueba] falta MenuPausa en la Zona 1");
+                return;
+            }
+
+            System.Reflection.MethodInfo alternar = typeof(MenuPausa).GetMethod("AlternarPausa");
+            if (alternar == null)
+            {
+                Debug.LogError("[Prueba] KeyCode.P no tiene una accion AlternarPausa");
+                return;
+            }
+
+            System.Reflection.FieldInfo campoPanel = typeof(MenuPausa).GetField("panelPausa", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            GameObject panelPausa = campoPanel == null ? null : campoPanel.GetValue(menuPausa) as GameObject;
+
+            alternar.Invoke(menuPausa, null);
+            bool pauso = Time.timeScale == 0f && panelPausa != null && panelPausa.activeSelf;
+            alternar.Invoke(menuPausa, null);
+            bool reanudo = Time.timeScale == 1f && panelPausa != null && !panelPausa.activeSelf;
+
+            Debug.Log("[Prueba] tecla P: pausa=" + pauso + " reanuda=" + reanudo);
+            if (!pauso || !reanudo) Debug.LogError("[Prueba] P no controla correctamente la pausa");
+            if (typeof(MenuPausa).GetMethod("SalirDelJuego") == null || typeof(MenuPrincipal).GetMethod("Salir") == null)
+                Debug.LogError("[Prueba] falta una accion de salida para ESC");
+
+            Orco[] goblins = UnityEngine.Object.FindObjectsByType<Orco>(FindObjectsSortMode.None);
+            int goblinsOk = 0;
+            int goblinsConAnimacionOjo = 0;
+            foreach (Orco goblin in goblins)
+            {
+                if (goblin.GetComponent<JefeFinal>() != null) continue;
+                Animator animator = goblin.GetComponentInChildren<Animator>(true);
+                SpriteRenderer sprite = goblin.GetComponentInChildren<SpriteRenderer>(true);
+                bool animGoblin = animator != null && animator.runtimeAnimatorController != null && animator.runtimeAnimatorController.name == "AnimacionOrco";
+                string spritePath = sprite != null && sprite.sprite != null ? UnityEditor.AssetDatabase.GetAssetPath(sprite.sprite) : "";
+                if (animGoblin && spritePath.Contains("Sprites/Orco/")) goblinsOk++;
+                if (spritePath.Contains("Eye-Bat")) goblinsConAnimacionOjo++;
+            }
+            Debug.Log("[Prueba] goblins con controlador/sprite de goblin: " + goblinsOk + " | con sprite de ojo: " + goblinsConAnimacionOjo);
+            if (goblinsOk < 1 || goblinsConAnimacionOjo > 0) Debug.LogError("[Prueba] enemigos de Zona 1 aun muestran murcielago/ojos");
+
             return;
         }
 
@@ -403,6 +462,28 @@ public static class PruebaRuntime
                 Debug.Log("[Prueba] el jugador entra a la arena con vida " + DatosJugador.vida);
             }
 
+            if (!bossAssetsRevisados && ahora - inicioPaso >= 1.5)
+            {
+                bossAssetsRevisados = true;
+                VerificarIntegracionONIET26();
+            }
+
+            if (victoriaBossEncolada && !victoriaBossVerificada && ahora - horaVictoriaBoss >= 3.0)
+            {
+                victoriaBossVerificada = true;
+                GameObject final = GameObject.Find("PanelFinal");
+                GameObject arte = GameObject.Find("ArteVictoria");
+                UnityEngine.UI.Image imagen = arte == null ? null : arte.GetComponent<UnityEngine.UI.Image>();
+                bool gana = final != null && final.activeInHierarchy && arte != null && arte.activeInHierarchy
+                    && imagen != null && imagen.sprite != null && Time.timeScale == 0f;
+                Debug.Log("[Prueba] muerte real del jefe activa victoria/cinematica ONIET26: " + gana);
+                if (!gana) Debug.LogError("[Prueba] la muerte del jefe no activa el final de victoria");
+
+                FinDeJuego.Instancia.OcultarPaneles();
+                Time.timeScale = 1f;
+                return;
+            }
+
             if (muerteEnArena < 0f && vidaArenaRegistrada && ahora - inicioPaso > 1.0)
             {
                 if (UnityEngine.Object.FindAnyObjectByType<Personaje>() == null)
@@ -539,6 +620,79 @@ public static class PruebaRuntime
         return maximo;
     }
 
+    private static void VerificarIntegracionONIET26()
+    {
+        JefeFinal jefe = UnityEngine.Object.FindAnyObjectByType<JefeFinal>();
+        if (jefe == null)
+        {
+            Debug.LogError("[Prueba] no aparece el jefe final en la escena");
+            return;
+        }
+
+        Animator animator = jefe.GetComponentInChildren<Animator>(true);
+        SpriteRenderer render = jefe.GetComponentInChildren<SpriteRenderer>(true);
+        string controller = animator != null && animator.runtimeAnimatorController != null
+            ? animator.runtimeAnimatorController.name : "NULL";
+        string sprite = render != null && render.sprite != null
+            ? UnityEditor.AssetDatabase.GetAssetPath(render.sprite) : "NULL";
+        Orco datos = jefe.GetComponent<Orco>();
+
+        Debug.Log("[Prueba] boss ONIET26: controller=" + controller + " sprite=" + sprite
+            + " escala=" + jefe.transform.localScale.x.ToString("0.0")
+            + " vida=" + (datos != null ? datos.VidaInicial : 0));
+
+        if (controller != "JefeONIET26") Debug.LogError("[Prueba] el boss no usa el controlador de animacion ONIET26");
+        if (sprite == "NULL" || !sprite.Contains("Boss/ONIET26/")) Debug.LogError("[Prueba] falta textura de jefe ONIET26");
+        if (Mathf.Abs(jefe.transform.localScale.x) < 2.5f) Debug.LogError("[Prueba] el jefe no esta claramente agrandado");
+        if (datos == null || datos.VidaInicial < 25) Debug.LogError("[Prueba] la barra/vida maxima del jefe no corresponde");
+
+        Sprite victoria = Resources.Load<Sprite>("ONIET26/Victoria");
+        if (victoria == null) Debug.LogError("[Prueba] no se cargo el arte de victoria ONIET26");
+        else Debug.Log("[Prueba] arte victoria ONIET26 cargado: " + victoria.name);
+
+        GameObject barraAntesDeVencer = GameObject.Find("BarraJefe");
+        bool barraVisibleEnCombate = barraAntesDeVencer != null && barraAntesDeVencer.activeInHierarchy
+            && barraAntesDeVencer.GetComponentInParent<Canvas>() != null;
+        Debug.Log("[Prueba] barra del jefe visible durante la pelea y en Canvas: " + barraVisibleEnCombate);
+        if (!barraVisibleEnCombate) Debug.LogError("[Prueba] la barra del jefe no aparece durante el combate");
+
+        bool guarda = false;
+        foreach (var m in typeof(DatosJugador).GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static))
+        {
+            if (m.Name.Contains("Guardar") || m.Name.Contains("Cargar")) guarda = true;
+        }
+        if (guarda) Debug.LogError("[Prueba] siguen expuestas funciones de guardado");
+
+        // Comprueba la interfaz de victoria con la imagen real y deja el estado limpio
+        FinDeJuego fin = FinDeJuego.Instancia;
+        fin.MostrarVictoria();
+        GameObject arte = GameObject.Find("ArteVictoria");
+        bool visible = arte != null && arte.activeInHierarchy && arte.GetComponent<UnityEngine.UI.Image>().sprite != null;
+        bool enCanvas = arte != null && arte.GetComponentInParent<Canvas>() != null;
+        Debug.Log("[Prueba] interfaz de victoria con arte ONIET26 visible: " + visible + " | dentro del Canvas: " + enCanvas);
+        if (!visible || !enCanvas) Debug.LogError("[Prueba] la pantalla de victoria no muestra el recurso ONIET26 en Canvas");
+        fin.OcultarPaneles();
+        fin.MostrarBarraJefe(datos != null ? datos.VidaActual : 0, datos != null ? datos.VidaInicial : 0);
+        Time.timeScale = 1f;
+
+        // RED/GREEN del flujo de victoria real: un golpe mortal debe salir del evento
+        // del jefe, mostrar el arte y pausar hasta aceptar la cinemática.
+        Personaje jugador = UnityEngine.Object.FindAnyObjectByType<Personaje>();
+        if (datos != null && jugador != null)
+        {
+            SerializedObject so = new SerializedObject(datos);
+            SerializedProperty hp = so.FindProperty("vidaOrco");
+            if (hp != null) hp.intValue = 1;
+            so.ApplyModifiedPropertiesWithoutUndo();
+
+            victoriaBossEncolada = true;
+            horaVictoriaBoss = EditorApplication.timeSinceStartup;
+            datos.RecibirGolpe(jugador.transform);
+            Debug.Log("[Prueba] le di el golpe mortal al jefe; verifico su final real en 3 s");
+        }
+        else Debug.LogError("[Prueba] no pude preparar la prueba real de victoria del jefe");
+    }
+
     private static void PruebasFuncionales()
     {
         GameObject[] enemigos = GameObject.FindGameObjectsWithTag("Orco");
@@ -559,10 +713,6 @@ public static class PruebaRuntime
                 + " vida=" + jefeEscena.VidaInicial);
         }
         else Debug.LogWarning("[Prueba] no encontre al jefe en la escena");
-
-        GameObject barra = GameObject.Find("BarraJefe");
-        Debug.Log("[Prueba] barra de vida del jefe existe: " + (barra != null)
-            + " | visible: " + (barra != null && barra.activeInHierarchy));
 
         Personaje jugador = UnityEngine.Object.FindAnyObjectByType<Personaje>();
         if (jugador == null)
@@ -593,19 +743,21 @@ public static class PruebaRuntime
     {
         GameObject panel = GameObject.Find("PanelFinal");
         bool visible = panel != null && panel.activeInHierarchy;
+        bool enCanvas = panel != null && panel.GetComponentInParent<Canvas>() != null;
 
         bool jugadorVivo = UnityEngine.Object.FindAnyObjectByType<Personaje>() != null;
 
         int finDeJuego = UnityEngine.Object.FindObjectsByType<FinDeJuego>(FindObjectsSortMode.None).Length;
 
         Debug.Log("[Prueba] pantalla de derrota visible tras morir: " + visible
+            + " | dentro del Canvas: " + enCanvas
             + " | jugador en escena: " + jugadorVivo
             + " | DatosJugador.vida = " + DatosJugador.vida
             + " | sistemas FinDeJuego: " + finDeJuego
             + " | Time.timeScale = " + Time.timeScale
             + " | Time.time = " + Time.time.ToString("0.0"));
 
-        if (!visible) Guardar("error=Exception en JefeFinal: la pantalla de derrota no aparecio al morir el jugador");
+        if (!visible || !enCanvas) Guardar("error=Exception en JefeFinal: la pantalla de derrota no aparecio en Canvas al morir");
     }
 
     private static void Informar()

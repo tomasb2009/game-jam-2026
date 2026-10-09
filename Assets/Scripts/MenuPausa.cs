@@ -9,32 +9,57 @@ public class MenuPausa : MonoBehaviour
 
     private bool estaPausado = false;
 
-    void Update()
+    private void Awake()
     {
+        estaPausado = panelPausa != null && panelPausa.activeSelf;
+        if (estaPausado) Time.timeScale = 0f;
+    }
+
+    private void Update()
+    {
+        // ESC siempre cierra el juego; P alterna la pausa.
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (estaPausado) Reanudar();
-            else Pausar();
+            SalirDelJuego();
+            return;
         }
+
+        if (Input.GetKeyDown(KeyCode.P)) AlternarPausa();
+    }
+
+    public void AlternarPausa()
+    {
+        if (estaPausado) Reanudar();
+        else Pausar();
     }
 
     public void Pausar()
     {
-        panelPausa.SetActive(true);
-        panelGradiante.SetActive(true);
-        Time.timeScale = 0f;   // congela el juego
+        if (panelPausa != null) panelPausa.SetActive(true);
+        if (panelGradiante != null) panelGradiante.SetActive(true);
+        Time.timeScale = 0f;
         estaPausado = true;
     }
 
     public void Reanudar()
     {
-        panelPausa.SetActive(false);
-        panelGradiante.SetActive(false);
-        Time.timeScale = 1f;   // el juego vuelve a velocidad normal
+        if (panelPausa != null) panelPausa.SetActive(false);
+        if (panelGradiante != null) panelGradiante.SetActive(false);
+        Time.timeScale = 1f;
         estaPausado = false;
     }
 
-    // Reinicia el nivel actual conservando monedas, inventario y ultimo nivel guardado
+    public void SalirDelJuego()
+    {
+        Time.timeScale = 1f;
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
+    }
+
+    // Reinicia el nivel actual sin sistema de guardado de partida.
     public void ReiniciarNivel()
     {
         Time.timeScale = 1f;

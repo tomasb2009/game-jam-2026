@@ -10,7 +10,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 292542994971351556, guid: 97012c0252d66354087441ef7a33646f, type: 3}
       propertyPath: m_Name
-      value: Orco Variant
+      value: OrcoFinal
       objectReference: {fileID: 0}
     - target: {fileID: 1950934427008854400, guid: 97012c0252d66354087441ef7a33646f, type: 3}
       propertyPath: m_LocalPosition.x

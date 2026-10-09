@@ -37,12 +37,14 @@ public class FinDeJuego : MonoBehaviour
     private TMP_Text textoBotonSecundario;
 
     private bool esVictoria;
+    private Image arteVictoria;
     private GameObject panelBarra;
     private RectTransform rellenoBarra;
     private TMP_Text nombreJefe;
     private TMP_Text vidaJefe;
     private Image imagenRelleno;
     private Coroutine parpadeo;
+    private Coroutine victoriaPendiente;
 
     private readonly Color colorPanel = new Color(0.031f, 0.035f, 0.039f, 0.92f);
     private readonly Color colorBoton = new Color(0.72f, 0.53f, 0.26f, 1f);
@@ -97,8 +99,18 @@ public class FinDeJuego : MonoBehaviour
 
     private void CrearPanelFinal()
     {
-        panelFinal = CrearImagen("PanelFinal", transform, colorPanel);
+        // Los paneles deben ser hijos del Canvas; antes estaban como hermanos y Unity no los dibujaba.
+        panelFinal = CrearImagen("PanelFinal", canvas.transform, colorPanel);
         Estirar(panelFinal);
+
+        // Ilustracion final entregada en los recursos oficiales de ONIET26.
+        GameObject arte = CrearImagen("ArteVictoria", panelFinal.transform, Color.white);
+        Estirar(arte);
+        arteVictoria = arte.GetComponent<Image>();
+        arteVictoria.sprite = Resources.Load<Sprite>("ONIET26/Victoria");
+        arteVictoria.preserveAspect = false;
+        arteVictoria.raycastTarget = false;
+        arte.SetActive(false);
 
         titulo = CrearTexto("Titulo", panelFinal.transform, "", 110f, TextAlignmentOptions.Center);
         RectTransform rtTitulo = titulo.rectTransform;
@@ -125,7 +137,7 @@ public class FinDeJuego : MonoBehaviour
 
     private void CrearBarraJefe()
     {
-        panelBarra = CrearImagen("BarraJefe", transform, new Color(0f, 0f, 0f, 0.65f));
+        panelBarra = CrearImagen("BarraJefe", canvas.transform, new Color(0f, 0f, 0f, 0.65f));
         RectTransform rtBarra = panelBarra.GetComponent<RectTransform>();
         rtBarra.anchorMin = new Vector2(0.5f, 1f);
         rtBarra.anchorMax = new Vector2(0.5f, 1f);
@@ -224,11 +236,30 @@ public class FinDeJuego : MonoBehaviour
 
     // ------------------------- API publica -------------------------
 
+    public void ProgramarVictoria(float retraso)
+    {
+        // Esta corrutina vive en FinDeJuego (DontDestroyOnLoad), no en el jefe:
+        // Orco.cs destruye al jefe a los 1,2 s y cortaba la rutina de victoria de 2,2 s.
+        if (victoriaPendiente != null) StopCoroutine(victoriaPendiente);
+        victoriaPendiente = StartCoroutine(VictoriaConRetraso(retraso));
+    }
+
+    private IEnumerator VictoriaConRetraso(float retraso)
+    {
+        yield return new WaitForSecondsRealtime(retraso);
+        victoriaPendiente = null;
+        MostrarVictoria();
+    }
+
     public void MostrarVictoria()
     {
         OcultarBarraJefe();
 
         esVictoria = true;
+        bool tieneArte = arteVictoria != null && arteVictoria.sprite != null;
+        arteVictoria.gameObject.SetActive(tieneArte);
+        titulo.gameObject.SetActive(!tieneArte);
+        detalle.gameObject.SetActive(!tieneArte);
         titulo.text = "VICTORIA";
         titulo.color = new Color(0.98f, 0.85f, 0.45f, 1f);
         detalle.text = "El tirano ha caido y el camino del guerrero queda completo.";
@@ -244,6 +275,9 @@ public class FinDeJuego : MonoBehaviour
         OcultarBarraJefe();
 
         esVictoria = false;
+        if (arteVictoria != null) arteVictoria.gameObject.SetActive(false);
+        titulo.gameObject.SetActive(true);
+        detalle.gameObject.SetActive(true);
         titulo.text = "DERROTA";
         titulo.color = new Color(0.75f, 0.2f, 0.16f, 1f);
         detalle.text = "Has caido en combate. El camino no termina aca.";

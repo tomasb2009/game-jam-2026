@@ -123,14 +123,7 @@ public class JefeFinal : MonoBehaviour
         FinDeJuego.Instancia.OcultarBarraJefe();
         DatosJugador.vida = DatosJugador.VIDA_MAXIMA;
 
-        StartCoroutine(VictoriaConRetraso());
-    }
-
-    private IEnumerator VictoriaConRetraso()
-    {
-        yield return new WaitForSeconds(retrasoVictoria);
-
-        FinDeJuego.Instancia.MostrarVictoria();
+        FinDeJuego.Instancia.ProgramarVictoria(retrasoVictoria);
     }
 
     // ------------------------- embestida -------------------------

@@ -5,6 +5,11 @@ public class MenuPrincipal : MonoBehaviour
 {
     [SerializeField] private string escenaPrimerMapa = "SampleScene";
 
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape)) Salir();
+    }
+
     // Partida nueva. El juego no guarda progreso, asi que siempre se arranca de cero.
     public void Jugar()
     {
