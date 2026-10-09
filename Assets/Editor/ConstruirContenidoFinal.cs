@@ -48,7 +48,7 @@ public static class ConstruirContenidoFinal
     [MenuItem("The Warrior Path/Compilar para Windows")]
     public static void CompilarWindows()
     {
-        string[] escenas = RutasDeEscenas();
+        string[] escenas = RutasDeEscenas().ToArray();
 
         if (!Directory.Exists(CarpetaBuild)) Directory.CreateDirectory(CarpetaBuild);
 
@@ -79,7 +79,7 @@ public static class ConstruirContenidoFinal
 
         LimpiarArena(escena);
 
-        if (Object.FindFirstObjectByType<JefeFinal>() == null)
+        if (Object.FindAnyObjectByType<JefeFinal>() == null)
         {
             GameObject jugador = BuscarPorNombre(escena, "Personaje");
             Vector3 centro = jugador != null ? jugador.transform.position + new Vector3(4f, 0f, 0f) : Vector3.zero;
@@ -281,7 +281,7 @@ public static class ConstruirContenidoFinal
 
         Scene escena = EditorSceneManager.OpenScene(EscenaCinematica, OpenSceneMode.Single);
 
-        if (Object.FindFirstObjectByType<FinDeCinematica>() != null)
+        if (Object.FindAnyObjectByType<FinDeCinematica>() != null)
         {
             Debug.Log("[WarriorPath] La cinematica ya tiene su cierre.");
             return;
